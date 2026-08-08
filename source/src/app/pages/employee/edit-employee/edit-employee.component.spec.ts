@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { APP_TEST_PROVIDERS } from 'src/app/testing/test-helpers';
 
 import { EditEmployeeComponent } from './edit-employee.component';
 
@@ -8,7 +10,9 @@ describe('EditEmployeeComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EditEmployeeComponent]
+      imports: [EditEmployeeComponent],
+
+      providers: [provideNoopAnimations(), ...APP_TEST_PROVIDERS],
     })
     .compileComponents();
 

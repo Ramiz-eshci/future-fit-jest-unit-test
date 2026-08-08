@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { APP_TEST_PROVIDERS } from 'src/app/testing/test-helpers';
 
 import { AddRoleComponent } from './add-role.component';
 
@@ -8,7 +10,9 @@ describe('AddRoleComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AddRoleComponent]
+      imports: [AddRoleComponent],
+
+      providers: [provideNoopAnimations(), ...APP_TEST_PROVIDERS],
     })
     .compileComponents();
 

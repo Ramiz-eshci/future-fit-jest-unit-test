@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { APP_TEST_PROVIDERS } from 'src/app/testing/test-helpers';
 
 import { UsersComponent } from './users.component';
 
@@ -8,7 +10,9 @@ describe('UsersComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [UsersComponent]
+      imports: [UsersComponent],
+
+      providers: [provideNoopAnimations(), ...APP_TEST_PROVIDERS],
     })
     .compileComponents();
 

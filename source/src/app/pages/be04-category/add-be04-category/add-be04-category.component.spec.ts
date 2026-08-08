@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { APP_TEST_PROVIDERS } from 'src/app/testing/test-helpers';
 
 import { AddBe04CategoryComponent } from './add-be04-category.component';
 
@@ -8,7 +10,9 @@ describe('AddBe04CategoryComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AddBe04CategoryComponent]
+      imports: [AddBe04CategoryComponent],
+
+      providers: [provideNoopAnimations(), ...APP_TEST_PROVIDERS],
     })
     .compileComponents();
 
