@@ -1,0 +1,86 @@
+<!-- @if(item.navCap) { @if(item.divider) {
+<span class="sidebar-divider"></span>
+}
+<div mat-subheader class="nav-caption">
+  {{ item.navCap }}
+</div>
+} @else {
+<a
+  mat-list-item
+  (click)="onItemSelected(item)"
+  [ngClass]="{
+      'mat-toolbar mat-primary activeMenu': item.route
+        ? router.isActive(item.route, true)
+        : false,
+    }"
+  class="menu-list-item"
+  [id]="item.id"
+>
+  <span
+    class="iconify routeIcon"
+    matListItemIcon
+    [attr.data-icon]="item.iconName"
+  ></span>
+
+  <span class="hide-menu">{{ item.displayName }}</span>
+</a>
+} -->
+
+<!-- ============================= -->
+<!-- @if(item.navCap){
+
+<div mat-subheader class="nav-caption" style="font-size:100% !important; font-weight:700;">
+  {{item.navCap}}
+</div>
+}
+@else{
+<a mat-list-item (click)="onItemSelected(item)" [class.activeMenu]="
+item.route
+?router.isActive(item.route,true)
+:false">
+
+  <span class="iconify routeIcon" [attr.data-icon]="item.iconName">
+  </span>
+
+  <span class="hide-menu">
+
+    {{item.displayName}}
+
+  </span>
+
+</a>
+
+} -->
+
+@if(item.navCap){
+
+<div
+  mat-subheader
+  class="nav-caption">
+  {{ item.navCap }}
+</div>
+
+}
+@else{
+
+<a
+  mat-list-item
+  class="menu-list-item"
+  (click)="onItemSelected(item)"
+  [class.activeMenu]="
+    item.route
+      ? router.isActive(item.route, true)
+      : false">
+
+  <span
+    class="iconify routeIcon"
+    [attr.data-icon]="item.iconName">
+  </span>
+
+  <span class="hide-menu">
+    {{ item.displayName }}
+  </span>
+
+</a>
+
+}

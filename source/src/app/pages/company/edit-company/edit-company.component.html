@@ -1,0 +1,105 @@
+<mat-card class="cardWithShadow theme-card">
+    <mat-card-header>
+        <mat-card-title class="m-b-0">Edit {{title}}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="b-t-1">
+        <form [formGroup]="companyForm" (ngSubmit)="onSubmit()" autocomplete="off">
+            <div class="row">
+
+                <div class="col-lg-6">
+                    <!-- input -->
+                    <mat-label class="f-w-600 m-b-8 d-block">Company Name</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput placeholder="Company Name" formControlName="CompanyName" />
+                    </mat-form-field>
+                    <validation-messages [control]="companyForm.controls.CompanyName"></validation-messages>
+                </div>
+
+                <div class="col-lg-6">
+                    <!-- input -->
+                    <mat-label class="f-w-600 m-b-8 d-block">Address</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput placeholder="Company Address" formControlName="CompanyAddress" />
+                    </mat-form-field>
+                    <validation-messages [control]="companyForm.controls.CompanyAddress"></validation-messages>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <fieldset class="fieldset fieldset--primary mb-3 mt-1 row">
+                    <legend class="fieldset__legend"><i class="fa fa-cogs" aria-hidden="true"></i>
+                        Company Admin Information
+                    </legend>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <!-- input -->
+                            <mat-label class="f-w-600 m-b-8 d-block">Owner First Name</mat-label>
+                            <mat-form-field appearance="outline" class="w-100" color="primary">
+                                <input matInput placeholder="Owner First Name " formControlName="FirstName"
+                                    autocomplete="off" />
+                            </mat-form-field>
+                            <validation-messages [control]="companyForm.controls.FirstName"></validation-messages>
+
+                        </div>
+                        <div class="col-lg-6">
+                            <!-- input -->
+                            <mat-label class="f-w-600 m-b-8 d-block">Owner Last Name</mat-label>
+                            <mat-form-field appearance="outline" class="w-100" color="primary">
+                                <input matInput placeholder="Owner Last Name " formControlName="LastName"
+                                    autocomplete="off" />
+                            </mat-form-field>
+                            <validation-messages [control]="companyForm.controls.LastName"></validation-messages>
+
+                        </div>
+                        <div class="col-lg-6">
+                            <!-- input -->
+                            <mat-label class="f-w-600 m-b-8 d-block">Email</mat-label>
+                            <mat-form-field appearance="outline" class="w-100" color="primary">
+                                <input matInput placeholder="Email " formControlName="CompanyEmail"
+                                    autocomplete="off" />
+                            </mat-form-field>
+                            <validation-messages [control]="companyForm.controls.CompanyEmail"></validation-messages>
+
+                        </div>
+                        <div class="col-lg-6">
+                            <!-- input -->
+                            <mat-label class="f-w-600 m-b-8 d-block">Number</mat-label>
+                            <mat-form-field appearance="outline" class="w-100" color="primary">
+                                <input type="text" pattern="[0-9]*"   maxlength="12" inputmode="numeric" matInput placeholder="Number " formControlName="CompanyNumber" />
+                            </mat-form-field>
+                            <validation-messages [control]="companyForm.controls.CompanyNumber"></validation-messages>
+                        </div>
+                        <!-- <div class="col-lg-6">
+                            <mat-label class="f-w-600 m-b-8 d-block">Password</mat-label>
+                            <mat-form-field appearance="outline" class="w-100" color="primary">
+                                <input matInput type="password" placeholder="Enter Password"
+                                    formControlName="password" />
+                            </mat-form-field>
+                            <validation-messages [control]="companyForm.controls.password"></validation-messages>
+                        </div>
+                        <div class="col-lg-6">
+                            <mat-label class="f-w-600 m-b-8 d-block">Confirm Password</mat-label>
+                            <mat-form-field appearance="outline" class="w-100" color="primary">
+                                <input matInput type="password" placeholder="Enter Password Again To Confirm"
+                                    formControlName="confirmPassword" />
+                            </mat-form-field>
+                            <validation-messages [control]="companyForm.controls.confirmPassword"></validation-messages>
+                        </div> -->
+                    </div>
+
+                </fieldset>
+            </div>
+
+            <div class="m-t-12">
+                <!-- <button mat-flat-button color="primary" class="m-r-8">Submit</button> -->
+                <button type="submit" mat-flat-button color="primary" value="Submit" class="m-r-8"
+                [disabled]="loading || !companyForm.valid">
+                    <span *ngIf="!loading">Submit</span>
+                    <!-- <mat-spinner  diameter="24"></mat-spinner> -->
+                    <mat-spinner *ngIf="loading" [diameter]="40" color="accent"></mat-spinner>
+                </button>
+                <a [routerLink]="['/company']" #tooltip="matTooltip" matTooltip="Back to {{title}} List"
+                 matTooltipPosition="right" mat-stroked-button color="warn">Cancel</a>
+            </div>
+        </form>
+    </mat-card-content>
+</mat-card>

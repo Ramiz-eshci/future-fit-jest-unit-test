@@ -1,0 +1,128 @@
+small {
+    font-size: 8px;
+}
+table {
+    font-size: 11px;
+}
+.pageWrapper {
+    padding: 10px !important;
+}
+
+tr {
+    text-align: left;
+}
+
+th,
+td {
+    border: 1px solid;
+}
+
+.mat-expansion-panel-header {
+    background: #efeee9 !important;
+    margin-top: 10px;
+}
+
+.mdc-button__label {
+    font-size: 10px !important;
+}
+
+.mat-select-panel {
+    font-size: 12px;
+}
+
+.pageWrapper {
+    padding: 0px !important;
+}
+
+mat-label {
+    font-size: 14px !important;
+}
+
+.custom-score-lable {
+    font-size: 12px;
+    padding: 0px !important;
+    display: block;
+}
+
+fieldset {
+    margin-right: 0px !important;
+    margin-top: 5px !important;
+}
+
+.defination_span{
+    font-size: 22px;
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+
+.spinner-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(45deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)); /* Enhanced background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    color: white;
+  }
+  
+  .spinner-container {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .loading-text {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #ffffff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  }
+
+  .spinner-overlay {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .close-popup-icon {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    cursor: pointer;
+    font-size: 20px;
+    color: #333;
+    z-index: 10;
+    width: 24px;
+    height: 24px;
+    /* Fixed size */
+    transition: transform 0.3s ease, color 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-popup-icon:hover {
+    color: #f00;
+    transform: rotate(180deg);
+}
+
+legend.fieldset__legend {
+    font-size: 20px;
+    padding: 10px;
+    line-height: 15px;
+    border-radius: 5px;
+}

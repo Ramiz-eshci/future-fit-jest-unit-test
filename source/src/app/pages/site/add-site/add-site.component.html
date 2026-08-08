@@ -1,0 +1,221 @@
+<mat-card class="cardWithShadow theme-card">
+    <mat-card-header>
+        <mat-card-title class="m-b-0">Add {{title}}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="b-t-1">
+        <form [formGroup]="siteForm" (ngSubmit)="onSubmit()" autocomplete="off">
+            <div class="row">
+                <div class="col-lg-6" *ngIf="RoleID == 1">
+                    <mat-label class="f-w-600 m-b-8 d-block">Company</mat-label>
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-select formControlName="CompanyID" placeholder="Select Company">
+                            @for(option of companyArr; track option.id) {
+                            <mat-option [value]="option.id">{{
+                                option.name
+                                }}</mat-option>
+                            }
+                        </mat-select>
+                    </mat-form-field>
+                    <validation-messages [control]="siteForm.controls.CompanyID"></validation-messages>
+                </div>
+
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Site Name</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input type="text" matInput placeholder="Site Name" formControlName="SiteName" />
+                    </mat-form-field>
+                    <validation-messages [control]="siteForm.controls.SiteName"></validation-messages>
+                    <div *ngIf="siteForm.controls.SiteName.touched && siteForm.controls.SiteName.errors?.pattern"
+                        class="error-text">
+                        Only letters, numbers and (. _ &amp; &#64; # $ % ^ -) are allowed
+                    </div>
+
+
+                </div>
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Site ID</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput placeholder="Site ID" formControlName="SiteID" />
+                    </mat-form-field>
+                    <validation-messages [control]="siteForm.controls.SiteID"></validation-messages>
+                     <div *ngIf="siteForm.controls.SiteID.touched && siteForm.controls.SiteID.errors?.pattern"
+                        class="error-text">
+                        Only letters, numbers and (. _ &amp; &#64; # $ % ^ -) are allowed
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Location</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput placeholder="Location" formControlName="Location" />
+                    </mat-form-field>
+                    <validation-messages [control]="siteForm.controls.Location"></validation-messages>
+                     <div *ngIf="siteForm.controls.Location.touched && siteForm.controls.Location.errors?.pattern"
+                        class="error-text">
+                        Only letters, numbers and (. _ &amp; &#64; # $ % ^ -) are allowed
+                    </div>
+                    <!-- <div *ngIf="siteForm.controls.Location.touched && siteForm.controls.Location.errors?.pattern" class="error-text">
+                     Special characters and numbers  are not allowed</div> -->
+                </div>
+                <div class="col-lg-6" *ngIf="RoleID != 1">
+
+                </div>
+
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Gaseous Emissions Reference year (BE05)</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput [matDatepicker]="yearPicker" placeholder="Choose Year"
+                            [value]="getYearDate(siteForm.get('GaseousReferenceyear')?.value)" readonly
+                            (dateChange)="chosenYearHandler($event.value, yearPicker,'GaseousReferenceyear')"
+                            maxlength="4" pattern="\d{4}" inputmode="numeric">
+                        <mat-datepicker-toggle matSuffix [for]="yearPicker"></mat-datepicker-toggle>
+                        <mat-datepicker #yearPicker startView="multi-year"
+                            (yearSelected)="chosenYearHandler($event, yearPicker,'GaseousReferenceyear')"
+                            panelClass="year-picker">
+                        </mat-datepicker>
+                    </mat-form-field>
+                </div>
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Reference Year Value</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput placeholder="Reference Year Value" pattern="^[0-9,]+$" inputmode="numeric"
+                            (input)="onNumberInput($event, 'GaseousRefYearValue')"
+                            formControlName="GaseousRefYearValue" />
+                        <mat-error *ngIf="siteForm.controls.GaseousRefYearValue.hasError('pattern')">
+                            Only numbers are allowed
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+                <!-- ----- -->
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Liquid Emissions Reference year (BE05)</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput [matDatepicker]="LiquidyearPicker" placeholder="Choose Year"
+                            [value]="getYearDate(siteForm.get('LiquidReferenceyear')?.value)" readonly
+                            (dateChange)="chosenYearHandler($event.value, LiquidyearPicker,'LiquidReferenceyear')"
+                            maxlength="4" pattern="\d{4}" inputmode="numeric">
+                        <mat-datepicker-toggle matSuffix [for]="LiquidyearPicker"></mat-datepicker-toggle>
+                        <mat-datepicker #LiquidyearPicker startView="multi-year"
+                            (yearSelected)="chosenYearHandler($event, LiquidyearPicker,'LiquidReferenceyear')"
+                            panelClass="year-picker">
+                        </mat-datepicker>
+                    </mat-form-field>
+
+                </div>
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Reference Year Value</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput placeholder="Reference Year Value" pattern="^[0-9,]+$" inputmode="numeric"
+                            (input)="onNumberInput($event, 'LiquidRefYearValue')"
+                            formControlName="LiquidRefYearValue" />
+                        <mat-error *ngIf="siteForm.controls.LiquidRefYearValue.hasError('pattern')">
+                            Only numbers are allowed
+                        </mat-error>
+                    </mat-form-field>
+
+                </div>
+                <!-- --------------- -->
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Solid Emissions Reference year (BE05)</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput [matDatepicker]="SolidyearPicker" placeholder="Choose Year"
+                            [value]="getYearDate(siteForm.get('SolidReferenceyear')?.value)" readonly
+                            (dateChange)="chosenYearHandler($event.value, SolidyearPicker,'SolidReferenceyear')"
+                            maxlength="4" pattern="\d{4}" inputmode="numeric">
+                        <mat-datepicker-toggle matSuffix [for]="SolidyearPicker"></mat-datepicker-toggle>
+                        <mat-datepicker #SolidyearPicker startView="multi-year"
+                            (yearSelected)="chosenYearHandler($event, SolidyearPicker,'SolidReferenceyear')"
+                            panelClass="year-picker">
+                        </mat-datepicker>
+                    </mat-form-field>
+
+
+                </div>
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Reference Year Value</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput placeholder="Reference Year Value" pattern="^[0-9,]+$" inputmode="numeric"
+                            (input)="onNumberInput($event, 'SolidRefYearValue')" formControlName="SolidRefYearValue" />
+                        <mat-error *ngIf="siteForm.controls.SolidRefYearValue.hasError('pattern')">
+                            Only numbers are allowed
+                        </mat-error>
+                    </mat-form-field>
+
+                </div>
+                <!-- -------be06------ -->
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">GHG Emissions Reference year (BE06) [Scope 1 & 2]</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput [matDatepicker]="GHGyearPicker" placeholder="Choose Year"
+                            [value]="getYearDate(siteForm.get('GHGemissionsReferenceYear')?.value)" readonly
+                            (dateChange)="chosenYearHandler($event.value, GHGyearPicker,'GHGemissionsReferenceYear')"
+                            maxlength="4" pattern="\d{4}" inputmode="numeric">
+                        <mat-datepicker-toggle matSuffix [for]="GHGyearPicker"></mat-datepicker-toggle>
+                        <mat-datepicker #GHGyearPicker startView="multi-year"
+                            (yearSelected)="chosenYearHandler($event, GHGyearPicker,'GHGemissionsReferenceYear')"
+                            panelClass="year-picker">
+                        </mat-datepicker>
+                    </mat-form-field>
+
+
+                </div>
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Reference Year Value</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput placeholder="Reference Year Value" pattern="^[0-9,]+$" inputmode="numeric"
+                            (input)="onNumberInput($event, 'GHGEmissionsRefYearValue')"
+                            formControlName="GHGEmissionsRefYearValue" />
+                        <mat-error *ngIf="siteForm.controls.GHGEmissionsRefYearValue.hasError('pattern')">
+                            Only numbers are allowed
+                        </mat-error>
+                    </mat-form-field>
+
+                </div>
+                <!-- --------be07------ -->
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Waste Generated Reference Year (BE07)</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput [matDatepicker]="WasteyearPicker" placeholder="Choose Year"
+                            [value]="getYearDate(siteForm.get('WasteGeneratedReferenceYear')?.value)" readonly
+                            (dateChange)="chosenYearHandler($event.value, WasteyearPicker,'WasteGeneratedReferenceYear')"
+                            maxlength="4" pattern="\d{4}" inputmode="numeric">
+                        <mat-datepicker-toggle matSuffix [for]="WasteyearPicker"></mat-datepicker-toggle>
+                        <mat-datepicker #WasteyearPicker startView="multi-year"
+                            (yearSelected)="chosenYearHandler($event, WasteyearPicker,'WasteGeneratedReferenceYear')"
+                            panelClass="year-picker">
+                        </mat-datepicker>
+                    </mat-form-field>
+
+
+                </div>
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Reference Year Value</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput placeholder="Reference Year Value" formControlName="WasteGeneratedRefYearValue"
+                            pattern="^[0-9,]+$" inputmode="numeric"
+                            (input)="onNumberInput($event, 'WasteGeneratedRefYearValue')" />
+                        <mat-error *ngIf="siteForm.controls.WasteGeneratedRefYearValue.hasError('pattern')">
+                            Only numbers are allowed
+                        </mat-error>
+                    </mat-form-field>
+
+                </div>
+
+
+            </div>
+
+
+
+            <div class="m-t-12">
+                <!-- <button mat-flat-button color="primary" class="m-r-8">Submit</button> -->
+                <button type="submit" mat-flat-button color="primary" value="Submit" class="m-r-8"
+                    [disabled]="loading || !siteForm.valid">
+                    <span *ngIf="!loading">Submit</span>
+                    <!-- <mat-spinner  diameter="24"></mat-spinner> -->
+                    <mat-spinner *ngIf="loading" [diameter]="40" color="accent"></mat-spinner>
+                </button>
+                <a [routerLink]="['/site']" #tooltip="matTooltip" matTooltip="Back to {{title}} list"
+                    matTooltipPosition="right" mat-stroked-button color="warn">Cancel</a>
+            </div>
+        </form>
+    </mat-card-content>
+</mat-card>

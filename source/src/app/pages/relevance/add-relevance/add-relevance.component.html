@@ -1,0 +1,34 @@
+<mat-card class="cardWithShadow theme-card">
+    <mat-card-header>
+      <mat-card-title class="m-b-0">Add {{title}}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="b-t-1">
+      <form [formGroup]="relevanceForm" (ngSubmit)="onSubmit()" autocomplete="off">
+        <div class="row">
+  
+          <div class="col-lg-6">
+            <!-- input -->
+            <mat-label class="f-w-600 m-b-8 d-block">Relevance Name</mat-label>
+            <mat-form-field appearance="outline" class="w-100" color="primary">
+              <input matInput placeholder="Relevance Name" formControlName="relevance_name" />
+            </mat-form-field>
+            <validation-messages [control]="relevanceForm.controls.relevance_name"></validation-messages>
+          </div>
+  
+  
+        </div>
+  
+        <div class="m-t-12">
+          <!-- <button mat-flat-button color="primary" class="m-r-8">Submit</button> -->
+          <button type="submit" mat-flat-button color="primary" value="Submit" class="m-r-8"
+            [disabled]="loading || !relevanceForm.valid">
+            <span *ngIf="!loading">Submit</span>
+            <!-- <mat-spinner  diameter="24"></mat-spinner> -->
+            <mat-spinner *ngIf="loading" [diameter]="40" color="accent"></mat-spinner>
+          </button>
+          <a [routerLink]="['/relevance']" #tooltip="matTooltip" matTooltip="Back to {{title}} List"
+            matTooltipPosition="above" mat-stroked-button color="warn">Cancel</a>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>

@@ -1,0 +1,138 @@
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        font-size: 16px;
+        text-align: left;
+    }
+
+    th,
+    td {
+        border: 1px solid #ddd;
+        padding: 12px;
+    }
+
+    th {
+        background-color: #f4f4f4;
+        font-weight: bold;
+    }
+
+    .mat-elevation-z8 {
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    mat-form-field {
+        width: 100%;
+    }
+
+    .custom-score-label {
+        font-weight: 600;
+        margin-top: 8px;
+        display: block;
+    }
+</style>
+<mat-card class="cardWithShadow">
+    <mat-card-content>
+        <mat-card-title>{{riskOwnerName}}
+            <div class="close-popup-icon" 
+                (click)="onClose()">
+
+                <span class="iconify routeIcon" matListItemIcon data-icon="solar:close-circle-line-duotone"></span>
+            </div>
+        </mat-card-title>
+        <form [formGroup]="riskOwnersForm">
+            <div class="spinner-overlay" *ngIf="isLoading">
+                <div class="spinner-container">
+                    <mat-spinner [diameter]="50" color="primary"></mat-spinner>
+                    <p class="loading-text">Loading, please wait...</p>
+                </div>
+            </div>
+            <div class="row" formArrayName="overAllScoringCategories">
+                <div *ngFor="let category of overAllScoringCategories.controls; let fieldIndex = index"
+                    [formGroupName]="fieldIndex"
+                    [class]="category.value.overall_subLabels.length > 2 ? 'col-lg-6' : 'col-lg-6'">
+
+                    <fieldset class="fieldset fieldset--primary mb-3 mt-1">
+                        <legend class="fieldset__legend"
+                            [ngStyle]="{'background-color': category.value.overall_color_code, 'color':'#fff'}">
+                            {{ category.value.overall_name }}
+                        </legend>
+                        <!--Tabel Format-->
+
+                        <!--Tabel Format-->
+
+                        <div class="row" formArrayName="overall_subLabels">
+                            <div *ngFor="let sub of getSubLabels(fieldIndex).controls; let subIndex = index"
+                                [formGroupName]="subIndex" class="col-md-12">
+
+                                <mat-label class="f-w-600 m-b-8 d-block"
+                                    *ngIf="sub.value.overall_scoring_root_category_id != 18 && sub.value.overall_scoring_root_category_id != 19">
+                                    {{ sub.value.overall_root_category }} - {{ sub.value.overall_parameter_name
+                                    }} : {{sub.value.overall_score}}
+                                    <span [matTooltip]="sub.value.overall_defination" matTooltipPosition="right" class="defination_span"
+                                        *ngIf="sub.value.overall_label_type == 1 && sub.value.overall_defination != ''">
+                                        <i class="iconify routeIcon mt-5" data-icon="material-symbols:info-outline">
+                                        </i>
+                                    </span>
+                                </mat-label>
+
+                                <!-- Conditional Rendering: Dropdown or Text Input -->
+                                <!-- <mat-form-field appearance="outline" class="w-100" color="primary"
+                                    *ngIf="sub.value.overall_label_type == 1; else textTemplate">
+                                    <input matInput [placeholder]="sub.value.overall_root_category"
+                                    formControlName="overall_selectedOptionId" [disabled]="sub.value.overall_is_read_only === 1"
+                                    [style.background-color]="sub.value.overall_color_change"
+                                    /> -->
+                                <!-- {{sub.value.options}} -->
+                                <!-- <pre>{{ sub.value.options | json }}</pre> -->
+                                <mat-form-field appearance="outline" class="w-100" color="primary"
+                                    *ngIf="sub.value.overall_label_type == 1; else textTemplate">
+                                    <mat-select [placeholder]="sub.value.overall_root_category"
+                                        formControlName="overall_selectedOptionId" >
+                                        <!-- <mat-option
+                                            *ngFor="let option of dropdownValuesCache.get(sub.value.overall_scoring_root_category_id) || []"
+                                            [value]="option.id">
+                                            {{ option.name }}
+                                        </mat-option> -->
+                                        <mat-option *ngFor="let option of sub.value.options" [value]="option.id">
+                                            {{ option.name }}
+                                        </mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+
+                                <!-- Read-Only or Editable Text Field -->
+                                <ng-template #textTemplate>
+                                    <mat-form-field appearance="outline" class="w-100" color="primary"
+                                        *ngIf="sub.value.overall_scoring_root_category_id != 15 && sub.value.overall_scoring_root_category_id != 18 && sub.value.overall_scoring_root_category_id != 19">
+                                        <input matInput [placeholder]="sub.value.overall_root_category"
+                                            formControlName="overall_selectedOptionId"
+                                            
+                                            [style.background-color]="sub.value.overall_color_change"
+                                            [style.color]="sub.value.font_color" />
+                                    </mat-form-field>
+                                </ng-template>
+
+                                <!-- Parameter Score Label -->
+                                <label class="f-w-600 m-b-8 d-block custom-score-label">
+
+
+                                </label>
+
+                            </div>
+                        </div>
+                    </fieldset>
+                </div>
+
+            </div>
+        </form>
+
+        <br>
+        <button (click)="onClose()" mat-stroked-button color="primary">Close</button>
+    </mat-card-content>
+</mat-card>
+<!-- <div mat-dialog-content>
+    <div mat-dialog-actions>
+        
+    </div>
+</div> -->

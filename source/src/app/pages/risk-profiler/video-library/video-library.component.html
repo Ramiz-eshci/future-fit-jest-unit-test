@@ -1,0 +1,75 @@
+<mat-card class="cardWithShadow theme-card">
+  <mat-card-header>
+    <mat-card-title class="m-b-0">Help</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content class="b-t-1">
+    <!-- <input type="text" [(ngModel)]="text" placeholder="Speak something..." />
+
+<button (click)="startListening()">🎤 Start</button>
+<button (click)="stopListening()">⏹ Stop</button> -->
+    <div class="video-grid">
+      <div class="video-card" *ngFor="let video of videos"
+        (click)="openVideo(video)">
+
+        <!-- Thumbnail -->
+        <div class="thumbnail">
+          <img [src]="video.thumbnail" alt="thumbnail" />
+          <div class="play-btn">▶</div>
+        </div>
+
+        <!-- Title -->
+        <div class="video-title" title="{{ video.title }}">
+          {{ video.title }}
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================= VIDEO POPUP ================= -->
+    <div class="overlay" *ngIf="selectedVideo">
+      <div class="modal">
+        <button class="close-btn" (click)="closeVideo()">✕</button>
+
+        <!-- <video controls autoplay>
+      <source [src]="selectedVideo.src" type="video/mp4" />
+      Your browser does not support the video tag.
+    </video> -->
+
+        <!-- <iframe
+          width="100%"
+          height="400"
+          [src]="safeVideoUrl"
+          frameborder="0"
+          allow="autoplay; encrypted-media"
+          allowfullscreen>
+        </iframe> -->
+        <!-- <video
+          width="100%"
+          height="400"
+          [src]="safeVideoUrl"
+          controls
+          controlsList="nodownload noplaybackrate"
+          disablePictureInPicture
+          playsinline>
+        </video> -->
+        <iframe width="100%" height="500"
+
+        [src]="safeVideoUrl"
+
+        title="YouTube video player"
+
+        frameborder="0"
+
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+
+        allowfullscreen>
+        </iframe>
+
+        
+
+        <p class="modal-title">{{ selectedVideo.title }}</p>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>

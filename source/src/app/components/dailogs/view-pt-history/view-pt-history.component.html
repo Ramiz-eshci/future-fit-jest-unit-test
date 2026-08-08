@@ -1,0 +1,29 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <mat-card-title>PT Reading Status History</mat-card-title>
+
+    <div class="timeline m-t-24">
+      @for(singleData of data; track singleData.reading_id) {
+      <div class="timeline-item d-flex overflow-hidden">
+        <div class="time text-right mat-subtitle-1 f-s-14">{{ singleData.created_on }}</div>
+        <div class="point d-flex align-items-center">
+          <span class="timeline-badge bg-primary m-y-8"></span>
+          <span class="timline-border d-block"></span>
+        </div>
+        <div class="desc">
+          <span class="mat-subtitle-1 f-s-14 lh-20 f-w-600 d-block">{{
+            singleData.status_name
+            }} by {{
+            singleData.created_name
+            }}</span>
+        </div>
+      </div>
+      }
+    </div>
+  </mat-card-content>
+</mat-card>
+<div mat-dialog-content>
+  <div mat-dialog-actions>
+    <button mat-flat-button (click)="onClose()" mat-stroked-button color="warn">Close</button>
+  </div>
+</div>

@@ -1,0 +1,87 @@
+ 
+.listing-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+/* Align year & value neatly */
+.year-value-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px; /* vertical spacing between entries */
+  padding: 4px 0;
+}
+
+.year-item,
+.monetary-item {
+  background: #f8fafc; /* light gray background */
+  border: 1px solid #e2e8f0; /* subtle border */
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+  color: #222;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.06);
+  transition: background 0.2s ease;
+}
+
+.year-item:hover,
+.monetary-item:hover {
+  background: #eaf3ff; /* light blue hover */
+  cursor: default;
+}
+
+// td div {
+//   line-height: 1.6;
+// }
+
+ 
+.listing-table td {
+  max-width: 250px;           
+  white-space: normal;       
+  word-break: break-word;     
+  vertical-align: middle;
+  padding: 10px 12px;         
+  font-size: 14px;
+}
+
+ 
+.listing-table th {
+  white-space: nowrap;
+  text-align: left;
+  font-weight: 600;
+  background-color: #0097a7;  
+  color: #fff;
+  padding: 12px 10px;
+}
+ 
+.listing-table tr:nth-child(even) td {
+  background-color: #f9f9f9;
+}
+
+ 
+.listing-table tr:hover td {
+  background-color: #eaf6f7;
+}
+
+ 
+.listing-table tr.mat-row {
+  height: auto;
+  border-bottom: 8px solid transparent;
+}
+
+ 
+@media (max-width: 768px) {
+  .listing-table td {
+    max-width: 180px;
+    font-size: 13px;
+  }
+}
+
+
+ 
+.wrap-text {
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.5;
+}

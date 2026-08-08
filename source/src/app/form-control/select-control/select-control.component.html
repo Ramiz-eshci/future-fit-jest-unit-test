@@ -1,0 +1,8 @@
+<div >
+    <mat-form-field appearance="outline" class="w-100" color="primary"> 
+        <!-- <mat-select matNativeControl required [(ngModel)]="ControlName"> -->
+        <mat-select matNativeControl required [formControl]="control" [value]="value" (selectionChange)="onSelectionChange($event)" >
+                <mat-option  *ngFor="let Subtag of newItems" [value]="Subtag.id">{{ Subtag.name }}</mat-option> 
+        </mat-select>
+    </mat-form-field> 
+    </div>

@@ -1,0 +1,445 @@
+<form [formGroup]="parentForm">
+  <h2>
+    {{ goal.goal_code }} - {{ goal.goal_name }} - ({{goal.goal_short_name}})
+    
+    <mat-icon class="info-icon" (click)="openHelpDialog(goal.fitness_criteria, goal.notes)" aria-label="Help">
+      info
+    </mat-icon>
+    <button (click)="toggleIndicators()" class="elegant-toggle-btn">
+      <span class="label">{{ showIndicators ? 'Hide Indicators' : 'Show Indicators' }}</span>
+      <mat-icon class="chevron" [@rotateChevron]="showIndicators ? 'expanded' : 'collapsed'">expand_more</mat-icon>
+    </button>
+     <button class="elegant-toggle-btn progress-btn" type="button" (click)="openProgressGraph()">
+      <span class="label">Progress Graph</span>
+    </button>
+  </h2>
+
+  <div class="indicator-grid" *ngIf="showIndicators" [@indicatorExpand]>
+    <div class="grid-header year-header">Year</div>
+    <div class="grid-header progress-header span-2">Progress Indicator</div>
+    <div class="grid-header context-header span-2">Context Indicator</div>
+    <div class="grid-header unit-header">Unit</div>
+    <div class="grid-header completeness-header">Data Completeness</div>
+
+    <ng-container *ngIf="uniqueYearsFromFitnessInputs.length > 0">
+      <ng-container *ngFor="let pi of goal.ProgressIndicators; let i = index let isFirst = first">
+        <div *ngIf="isFirst" class="grid-item year-cell" [attr.rowspan]="goal.ProgressIndicators.length">
+          {{ uniqueYearsFromFitnessInputs[0] }}
+        </div>
+        <div class="grid-item">{{ pi.progress_indicator }}</div>
+        <div class="grid-item highlight">{{ calculateProgressIndicator((uniqueYearsFromFitnessInputs[0])) }}</div>
+        <div class="grid-item">{{ goal.ContextIndicators[i]?.context_indicator || '-' }}</div>
+        <div class="grid-item">{{ calculateContextIndicator((uniqueYearsFromFitnessInputs[0])) }}</div>
+        <div class="grid-item">{{ goal.ContextIndicators[i]?.unit || '-' }}</div>
+        <div class="grid-item highlight">{{ calculateDataCompleteness(uniqueYearsFromFitnessInputs[0])}}</div>
+      </ng-container>
+
+      <ng-container *ngFor="let ci of goal.ContextIndicators; let i = index">
+        <div *ngIf="i >= goal.ProgressIndicators.length" class="grid-item">{{ ci.context_indicator || '-' }}</div>
+        <div *ngIf="i >= goal.ProgressIndicators.length" class="grid-item">{{
+          calculateContextIndicator((uniqueYearsFromFitnessInputs[0])) }}</div>
+        <div *ngIf="i >= goal.ProgressIndicators.length" class="grid-item">{{ ci.unit || '-' }}</div>
+      </ng-container>
+    </ng-container>
+ 
+    <div class="grid-item full-width-row" *ngIf="uniqueYearsFromFitnessInputs.length > 1"
+      (click)="showRemaining = !showRemaining">
+      <span>View {{ uniqueYearsFromFitnessInputs.length - 1 }} more years</span>
+      <span class="arrow-icon">{{ showRemaining ? '▲' : '▼' }}</span>
+    </div>
+     
+    <ng-container *ngIf="showRemaining">
+      <ng-container *ngFor="let year of uniqueYearsFromFitnessInputs.slice(1)">
+        <ng-container *ngFor="let pi of goal.ProgressIndicators; let i = index; let isFirst = first">
+          <div *ngIf="isFirst" class="grid-item year-cell" [attr.rowspan]="goal.ProgressIndicators.length">
+            {{ year }}
+          </div>
+          <div class="grid-item">{{ pi.progress_indicator }}</div>
+          <div class="grid-item highlight">{{ calculateProgressIndicator(year) }}</div>
+          <div class="grid-item">{{ goal.ContextIndicators[i]?.context_indicator || '-' }}</div>
+          <div class="grid-item">{{ calculateContextIndicator(year) }}</div>
+          <div class="grid-item">{{ goal.ContextIndicators[i]?.unit || '-' }}</div>
+          <div class="grid-item highlight">{{ calculateDataCompleteness(uniqueYearsFromFitnessInputs[0])}}</div>
+        </ng-container>
+
+        <!-- Extra ContextIndicators -->
+        <ng-container *ngFor="let ci of goal.ContextIndicators; let i = index">
+          <ng-container *ngIf="i >= goal.ProgressIndicators.length">
+            <div *ngIf="i >= goal.ProgressIndicators.length" class="grid-item">{{ ci.context_indicator || '-' }}</div>
+            <div *ngIf="i >= goal.ProgressIndicators.length" class="grid-item">{{ calculateContextIndicator(year) }}
+            </div>
+            <div *ngIf="i >= goal.ProgressIndicators.length" class="grid-item">{{ ci.unit || '-' }}</div>
+            <div class="grid-item highlight">{{ calculateDataCompleteness(year) }}</div>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+  </div>
+
+
+   
+  <ng-container *ngIf="products!.length > 0">
+    <div [formArrayName]="arrayName" class="sites-container">
+      <mat-accordion class="sites-accordion">
+        <mat-expansion-panel *ngFor="let product of products.controls; let i = index" [formGroupName]="i"
+          class="site-panel">
+         
+          <mat-expansion-panel-header class="site-panel-header">
+            <div class="site-header">
+              <div class="site-header-item">
+                <span class="heading">Product Name:</span>
+                <span class="site-title">{{ product.get('productName')?.value || '-' }}</span>
+              </div>
+              <div class="site-header-item">
+                <span class="heading">Product ID:</span>
+                <span class="site-title">{{ product.get('productId')?.value || '-' }}</span>
+              </div>
+              <div class="site-header-item">
+                <span class="heading">User Group :</span>
+                <span class="site-title">{{ product.get('userGroup')?.value || '-' }}</span>
+              </div>
+
+              <div class="site-header-item">
+                <span class="heading">User Group ID:</span>
+                <span class="site-title">{{ product.get('userGroupId')?.value || '-' }}</span>
+              </div>
+            </div>
+
+          </mat-expansion-panel-header>
+
+          <div class="panel-content">
+             
+
+            <div class="row">
+
+              <div formArrayName="fitnessInputs" class="fitness-inputs-container">
+                <div class="fitness-inputs-header">
+                  <h3 class="fitness-inputs-title">Progress indicator data</h3>
+                  <button class="add-fitness-btn" mat-flat-button color="primary" type="button"
+                    (click)="addFitnessInput(i)">Add progress data</button>
+                </div>
+                <mat-expansion-panel *ngFor="let input of getFitnessInputs(product).controls; let j = index"
+                  [formGroupName]="j" class="row  fitness-input-row">
+                  <mat-expansion-panel-header class="site-panel-header fitness-inputs-header">
+                    <div class="site-header">
+                      <div class="site-header-item">
+                     
+                         <span class="site-title" *ngIf="isValidYearShow(input.get('year')?.value); else selectYear">
+                      {{ input.get('year')?.value | date:'yyyy' }}
+                    </span>
+
+                    <ng-template #selectYear>
+
+                    </ng-template>
+
+                      </div>
+                    </div>
+                  </mat-expansion-panel-header>
+                  <div class="row fitness-input-row">
+
+                    <div class="col-md-12 label-title">
+                      <p class="decorated"><span>Relevance</span></p>
+                    </div>
+
+
+                    <div class="col-md-3">
+                      <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Relevance</mat-label>
+                        <mat-select formControlName="relevance" (selectionChange)="calculate.emit()">
+                          <mat-option *ngFor="let option of relevantsArr" [value]="option.id">
+                            {{ option.name }}
+                          </mat-option>
+                        </mat-select>
+                        <mat-error
+                          *ngIf="product.get('relevance')?.hasError('required') && product.get('relevance')?.touched">
+                          Relevance is required
+                        </mat-error>
+                      </mat-form-field>
+                    </div>
+                    <div class="col-md-3">
+                      <mat-form-field appearance="outline" class="w-100 fitness-input-field">
+                        <mat-label>Year</mat-label>
+                        <input matInput [matDatepicker]="yearPicker" formControlName="year" readonly
+                          (click)="yearPicker.open()" />
+                        <mat-datepicker-toggle matSuffix [for]="yearPicker"></mat-datepicker-toggle>
+                        <mat-datepicker #yearPicker startView="multi-year"
+                          (yearSelected)="setYear($event, yearPicker, i, j)" panelClass="year-picker"
+                          [startAt]="startYear">
+                        </mat-datepicker>
+                        <mat-error *ngIf="input.get('year')?.hasError('duplicateYear') && input.get('year')?.touched">
+                          This year is already in site.
+                        </mat-error>
+                        <mat-error *ngIf="input.get('year')?.hasError('required') && input.get('year')?.touched">
+                          Year is required.
+                        </mat-error>
+                      </mat-form-field>
+                    </div>
+
+
+                    <div class="col-md-3">
+                      <mat-form-field appearance="outline" class="w-100">
+                        <mat-label> Revenue</mat-label>
+                        <input type="text" matInput appNumberFormatter formControlName="revenue" readonly />
+                      </mat-form-field>
+                    </div>
+                    <div class="col-md-3">
+                      <mat-form-field appearance="outline" class="w-100">
+                        <mat-label> Product Fitness</mat-label>
+                        <input type="text" matInput formControlName="product_fitness_percentage" readonly />
+                      </mat-form-field>
+                    </div>
+                    <div class="criteria-section">
+                      <h4 class="criteria-header">User groups</h4>
+                      <div class="criteria-grid">
+                        <mat-checkbox formControlName="user_groups_communicationplans" class="criteria-item">Major user
+                          groups
+                          which require unique communication plans are identified</mat-checkbox>
+                        <mat-checkbox formControlName="communications_are_considered" class="criteria-item"> Needs of
+                          non-target
+                          groups, who may be adversely affected by communications are considered</mat-checkbox>
+                      </div>
+                    </div>
+
+                    <div class="criteria-section">
+                      <h4 class="criteria-header">Communications plan</h4>
+                      <div class="criteria-grid">
+                        <mat-checkbox formControlName="communications_crucial_information"
+                          class="criteria-item">Communication
+                          plans in place that provide identified groups with crucial information on key product
+                          characteristics</mat-checkbox>
+                        <mat-checkbox formControlName="communications_product_information" class="criteria-item">Steps
+                          taken
+                          to
+                          ensure that each user group is aware of available product information, and how to access
+                          it</mat-checkbox>
+
+                      </div>
+                    </div>
+
+                    <div class="criteria-section">
+                      <h4 class="criteria-header">Purchase decisions</h4>
+                      <div class="criteria-grid">
+                        <mat-checkbox formControlName="purchase_information_needed" class="criteria-item">All
+                          information
+                          needed
+                          to understand the product offering and the consequences associated with its purchase is
+                          provided</mat-checkbox>
+
+                        <mat-form-field appearance="outline" class="criteria-item w-100">
+                          <mat-label>For physical goods: a listing of all materials, including  any potentially harmful substances present in the product</mat-label>
+                          <mat-select formControlName="purchase_physical_goods">
+                            <mat-option *ngFor="let option of commonOptions" [value]="option.id">
+                              {{ option.name }}
+                            </mat-option>
+                          </mat-select>
+
+                        </mat-form-field>
+
+
+                        <mat-form-field appearance="outline" class="criteria-item w-100">
+                          <mat-label>A description
+                            of
+                            the
+                            nature and quantities of resources (e.g. water, energy, fuel) required to use the
+                            product</mat-label>
+                          <mat-select formControlName="purchase_nature_andquantities">
+                            <mat-option *ngFor="let option of commonOptions" [value]="option.id">
+                              {{ option.name }}
+                            </mat-option>
+                          </mat-select>
+
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="criteria-item w-100">
+                          <mat-label>Identification of other use-phase characteristics of products, such as potential
+                            health impacts,
+                            and
+                            in-use emissions </mat-label>
+                          <mat-select formControlName="purchase_characteristics_ofproducts">
+                            <mat-option *ngFor="let option of commonOptions" [value]="option.id">
+                              {{ option.name }}
+                            </mat-option>
+                          </mat-select>
+
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="criteria-item w-100">
+                          <mat-label>Ambiguous terms when
+                            describing environmental or health characteristics of products is avoided </mat-label>
+                          <mat-select formControlName="purchase_ambiguous_term">
+                            <mat-option *ngFor="let option of commonOptions" [value]="option.id">
+                              {{ option.name }}
+                            </mat-option>
+                          </mat-select>
+
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="criteria-item w-100">
+                          <mat-label>Comparative or
+                            absolute
+                            claims is avoided unless supported by empirical evidence </mat-label>
+                          <mat-select formControlName="purchase_comparative">
+                            <mat-option *ngFor="let option of commonOptions" [value]="option.id">
+                              {{ option.name }}
+                            </mat-option>
+                          </mat-select>
+
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="criteria-item w-100">
+                          <mat-label>When user groups may
+                            require
+                            extra guidance (e.g. children, the elderly), efforts should be made to accommodate their
+                            needs </mat-label>
+                          <mat-select formControlName="purchase_user_groups">
+                            <mat-option *ngFor="let option of commonOptions" [value]="option.id">
+                              {{ option.name }}
+                            </mat-option>
+                          </mat-select>
+
+                        </mat-form-field>
+
+                      </div>
+                    </div>
+                    <div class="criteria-section drop-down-section">
+                      <h4 class="criteria-header">Use of products</h4>
+                      <div class="criteria-grid">
+
+                        <mat-form-field appearance="outline" class="criteria-item w-100">
+                          <mat-label>Users provided with any
+                            instructions necessary for the safe operation, storage, and disposal of the
+                            product</mat-label>
+                          <mat-select formControlName="use_users_provided">
+                            <mat-option *ngFor="let option of commonOptions" [value]="option.id">
+                              {{ option.name }}
+                            </mat-option>
+                          </mat-select>
+
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="criteria-item w-100">
+                          <mat-label>Nutrition
+                            information:
+                            users provided with clear nutritional guidance together with healthy consumption
+                            recommendations </mat-label>
+                          <mat-select formControlName="use_nutrition_information">
+                            <mat-option *ngFor="let option of commonOptions" [value]="option.id">
+                              {{ option.name }}
+                            </mat-option>
+                          </mat-select>
+
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="criteria-item w-100">
+                          <mat-label>Users provided with
+                            guidance on
+                            when product is fit for use, and when not, to safeguard wellbeing, and reduce
+                            waste</mat-label>
+                          <mat-select formControlName="use_with_guidance">
+                            <mat-option *ngFor="let option of commonOptions" [value]="option.id">
+                              {{ option.name }}
+                            </mat-option>
+                          </mat-select>
+
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="criteria-item w-100">
+                          <mat-label>Guidance provided  on ideal usage conditions, how to minimize resource requirements and maintenance</mat-label>
+                          <mat-select formControlName="use_guidance_provided">
+                            <mat-option *ngFor="let option of commonOptions" [value]="option.id">
+                              {{ option.name }}
+                            </mat-option>
+                          </mat-select>
+
+                        </mat-form-field>
+                      
+                      </div>
+                    </div>
+
+                    <div class="criteria-section drop-down-section">
+                      <h4 class="criteria-header">Post-use treatment</h4>
+                      <div class="criteria-grid">
+
+                        <mat-form-field appearance="outline" class="criteria-item w-100">
+                          <mat-label>If a physical good can be
+                            repurposed, all information necessary for users to do so is provided</mat-label>
+                          <mat-select formControlName="post_physical_good">
+                            <mat-option *ngFor="let option of commonOptions" [value]="option.id">
+                              {{ option.name }}
+                            </mat-option>
+                          </mat-select>
+
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="criteria-item w-100">
+                          <mat-label>If improper disposal
+                            of
+                            a
+                            product could cause harm, this must be made clear</mat-label>
+                          <mat-select formControlName="post_improper_disposal">
+                            <mat-option *ngFor="let option of commonOptions" [value]="option.id">
+                              {{ option.name }}
+                            </mat-option>
+                          </mat-select>
+
+                        </mat-form-field> 
+
+                      </div>
+                    </div>
+
+                    <div class="col-md-12">
+                      <mat-form-field appearance="outline" class="w-100 comments-field">
+                        <mat-label>Comments</mat-label>
+                        <textarea matInput formControlName="comments" rows="4"></textarea>
+                      </mat-form-field>
+                    </div>
+                    <div class="col-md-1 text-right">
+                      <button mat-icon-button color="warn" type="button" (click)="removeFitnessInput(i, j)"
+                        [disabled]="getFitnessInputs(product).length === 1" matTooltip="Remove this entry">
+                        <mat-icon>remove_circle</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                </mat-expansion-panel>
+              </div>
+            </div>
+          </div>
+        </mat-expansion-panel>
+      </mat-accordion>
+    </div>
+    <div class="next-button-wrapper">
+      <button mat-flat-button color="primary" class="custom-submit-btn" type="button" (click)="submitForm()">
+        <span *ngIf="!loading">Submit</span> 
+        <mat-spinner *ngIf="loading" [diameter]="40" color="accent"></mat-spinner></button>
+    </div>
+  </ng-container>
+</form>
+
+<ng-template #progressGraphDialog>
+
+  <div class="dialog-header">
+
+    <h2 mat-dialog-title>
+      Annual Progress Trajectory
+    </h2>
+
+    <button mat-icon-button mat-dialog-close class="close-btn">
+      <mat-icon>close</mat-icon>
+    </button>
+
+  </div>
+
+  <mat-dialog-content>
+
+    <div class="graph-container">
+      <div class="left-graph" *ngIf="chartOptions">
+        <div class="context-unit" *ngIf="contextUnit">
+          {{ contextUnit }}
+        </div>
+        <apx-chart [series]="chartOptions.series" [chart]="chartOptions.chart" [xaxis]="chartOptions.xaxis"
+          [yaxis]="chartOptions.yaxis" [stroke]="chartOptions.stroke" [plotOptions]="chartOptions.plotOptions">
+        </apx-chart>
+      </div>
+    </div>
+  </mat-dialog-content>
+</ng-template>

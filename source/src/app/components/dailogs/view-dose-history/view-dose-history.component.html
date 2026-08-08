@@ -1,0 +1,25 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content>
+        <mat-card-title>PT Reading Dose History</mat-card-title>
+
+        <table>
+            <tr>
+                <th>Dose</th>
+                <th>Date Prescribed</th>
+                <th>Comments</th>
+                <th>Calculated Date</th>
+            </tr>
+            <tr *ngFor="let singleData of data">
+                <td>{{ singleData.dose_change }}</td>
+                <td>{{ singleData.date_prescribed }}</td>
+                <td>{{ singleData.comments }}</td>
+                <td>{{ singleData.created_on }}</td>
+            </tr>
+        </table>
+    </mat-card-content>
+</mat-card>
+<div mat-dialog-content>
+    <div mat-dialog-actions>
+        <button mat-flat-button (click)="onClose()" mat-stroked-button color="warn">Close</button>
+    </div>
+</div>

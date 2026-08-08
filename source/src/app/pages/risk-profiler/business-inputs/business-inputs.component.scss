@@ -1,0 +1,60 @@
+.page {
+  padding: 16px;
+}
+
+.header {
+  background: #4a94a6;
+  color: white;
+  padding: 16px;
+  border-radius: 6px;
+}
+
+.characteristic {
+  font-size: 14px;
+}
+
+.risk.high {
+  color: red;
+  font-weight: bold;
+}
+
+.risk.low {
+  color: green;
+  font-weight: bold;
+}
+
+.buttons button {
+  margin-right: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  background: #d9eaf0;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.buttons button.active {
+  background: #1f4d57;
+  color: #fff;
+}
+
+/* Company button orange theme */
+.company-buttons button {
+  background: #ffe3c2;
+  color: #8a4b00;
+}
+
+.company-buttons button.active {
+  background: #f57c00;
+  color: #fff;
+}
+
+.table-head {
+  padding: 12px 8px;
+  border-bottom: 2px solid #ddd;
+  margin-bottom: 8px;
+}
+.row.border-bottom {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}

@@ -1,0 +1,177 @@
+<mat-card class="cardWithShadow theme-card">
+    <mat-card-header>
+        <mat-card-title class="m-b-0">Add {{title}}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="b-t-1">
+        <form [formGroup]="productForm" (ngSubmit)="onSubmit()" autocomplete="off">
+            <div class="row">
+                <div class="col-lg-6" *ngIf="RoleID == 1">
+                    <mat-label class="f-w-600 m-b-8 d-block">Company</mat-label>
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-select formControlName="CompanyID" placeholder="Select Company">
+                            @for(option of companyArr; track option.id) {
+                            <mat-option [value]="option.id">{{
+                                option.name
+                                }}</mat-option>
+                            }
+                        </mat-select>
+                    </mat-form-field>
+                    <validation-messages [control]="productForm.controls.CompanyID"></validation-messages>
+                </div>
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Product Type</mat-label>
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-select formControlName="ProductType" placeholder="Select Product Type">
+                            @for(option of productTypeArr; track option.id) {
+                            <mat-option [value]="option.id">{{
+                                option.name
+                                }}</mat-option>
+                            }
+                        </mat-select>
+                    </mat-form-field>
+                    <validation-messages [control]="productForm.controls.ProductType"></validation-messages>
+                </div>
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Site Name</mat-label>
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-select formControlName="SiteID" placeholder="Select Site Name">
+                            @for(option of sitesArr; track option.id) {
+                            <mat-option [value]="option.id">{{
+                                option.name
+                                }}</mat-option>
+                            }
+                        </mat-select>
+                    </mat-form-field>
+                    <validation-messages [control]="productForm.controls.SiteID"></validation-messages>
+                </div>
+
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Product Name</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput placeholder="Product Name" formControlName="ProductName" />
+                    </mat-form-field>
+                    <validation-messages [control]="productForm.controls.ProductName"></validation-messages>
+                    <div *ngIf="productForm.controls.ProductName.touched && productForm.controls.ProductName.errors?.pattern"
+                        class="error-text">
+                         Only letters, numbers and (. _ &amp; &#64; # $ % ^ -) are allowed</div>
+                </div>
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Product ID</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput placeholder="Product ID" formControlName="ProductIDManual" />
+                    </mat-form-field>
+                    <validation-messages [control]="productForm.controls.ProductIDManual"></validation-messages>
+                    <div *ngIf="productForm.controls.ProductIDManual.touched && productForm.controls.ProductIDManual.errors?.pattern"
+                        class="error-text">
+                        Only letters, numbers and (. _ &amp; &#64; # $ % ^ -) are allowed</div>
+                </div>
+                 
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">User Group</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput placeholder="User Group" formControlName="UserGroup" />
+                    </mat-form-field>
+                    <validation-messages [control]="productForm.controls.UserGroup"></validation-messages>
+                    <div *ngIf="productForm.controls.UserGroup.touched && productForm.controls.UserGroup.errors?.pattern"
+                        class="error-text">
+                          Only letters, numbers and (. _ &amp; &#64; # $ % ^ -) are allowed</div>
+                </div>
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">User Group ID</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput placeholder="User Group ID" formControlName="UserGroupID" />
+                    </mat-form-field>
+                    <validation-messages [control]="productForm.controls.UserGroupID"></validation-messages>
+                    <div *ngIf="productForm.controls.UserGroupID.touched && productForm.controls.UserGroupID.errors?.pattern"
+                        class="error-text">
+                         Only letters, numbers and (. _ &amp; &#64; # $ % ^ -) are allowed</div>
+                </div>
+                <div formArrayName="yearlyRevenueData" class="col-12">
+
+                    <!-- Header with Add button on the right -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <mat-label class="f-w-600">Yearly Revenue Details</mat-label>
+                        <button mat-stroked-button color="primary" type="button" (click)="addYearGroup()">
+                            <mat-icon>add</mat-icon> Add Year
+                        </button>
+                    </div>
+
+                    <div *ngFor="let group of yearlyRevenueData.controls; let i = index" [formGroupName]="i"
+                        class="row align-items-end mb-2">
+ 
+                        <div class="col-lg-5">
+                            <mat-label class="f-w-600 m-b-8 d-block">Year</mat-label>
+
+                            <mat-form-field appearance="outline" class="w-100" color="primary">
+                                <input matInput [matDatepicker]="yearPicker" readonly placeholder="Select Year"
+                                    (click)="yearPicker.open()" formControlName="Year" autocomplete="off" />
+
+                                <mat-datepicker-toggle matSuffix [for]="yearPicker"></mat-datepicker-toggle>
+
+                                <mat-datepicker #yearPicker startView="multi-year"
+                                    (yearSelected)="selectYear($event, yearPicker, i)"
+                                    panelClass="year-picker"></mat-datepicker>
+                            </mat-form-field>
+
+                            <!-- Validation messages -->
+                            <div *ngIf="group.get('Year')?.touched && group.get('Year')?.errors?.['required']"
+                                class="error-text">
+                                Year is required
+                            </div>
+
+                            <div *ngIf="group.get('Year')?.touched && group.get('Year')?.errors?.['duplicateYear']"
+                                class="error-text">
+                                This year is already added, please select another year.
+                            </div>
+                        </div>
+
+                        <div class="col-lg-5">
+                            <mat-label class="f-w-600 m-b-8 d-block">Revenue Cost</mat-label>
+                            <mat-form-field appearance="outline" class="w-100" color="primary">
+                                <!-- <input matInput placeholder="Enter Revenue Cost" formControlName="RevenueCost"
+                                    pattern="^[0-9]+$" type="number" /> -->
+                                    <input
+  matInput
+  placeholder="Enter Revenue Cost"
+  formControlName="RevenueCost"
+  inputmode="numeric"
+  pattern="^[0-9]+$"
+  (input)="onNumberInput($event, group)"
+/>
+
+                            </mat-form-field>
+                            <div *ngIf="group.get('RevenueCost')?.touched && group.get('RevenueCost')?.errors?.['required']"
+                                class="error-text">
+                                Revenue Cost is required
+                            </div>
+                        </div>
+
+                        <div class="col-lg-2 d-flex justify-content-start">
+                            <button mat-mini-fab color="warn" type="button" [disabled]="yearlyRevenueData.length == 1"
+                                (click)="removeYearGroup(i)" class="remove-btn">
+                                <mat-icon>remove</mat-icon>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+ 
+
+            </div>
+
+
+
+            <div class="m-t-12">
+                <!-- <button mat-flat-button color="primary" class="m-r-8">Submit</button> -->
+                <button type="submit" mat-flat-button color="primary" value="Submit" class="m-r-8"
+                    [disabled]="loading || !productForm.valid">
+                    <span *ngIf="!loading">Submit</span>
+                    <!-- <mat-spinner  diameter="24"></mat-spinner> -->
+                    <mat-spinner *ngIf="loading" [diameter]="40" color="accent"></mat-spinner>
+                </button>
+                <a [routerLink]="['/product']" #tooltip="matTooltip" matTooltip="Back to {{title}} list"
+                    matTooltipPosition="right" mat-stroked-button color="warn">Cancel</a>
+            </div>
+        </form>
+    </mat-card-content>
+</mat-card>

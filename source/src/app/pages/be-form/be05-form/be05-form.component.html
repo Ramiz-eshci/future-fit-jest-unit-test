@@ -1,0 +1,507 @@
+<div [formGroup]="parentForm">
+  <h2>
+    {{ goal.goal_code }} - {{ goal.goal_name }} - ({{goal.goal_short_name}})
+
+    <mat-icon class="info-icon" (click)="openHelpDialog(goal.fitness_criteria, goal.notes)" aria-label="Help">
+      info
+    </mat-icon>
+
+    <button (click)="toggleIndicators()" class="elegant-toggle-btn" type="button">
+      <span class="label">{{ showIndicators ? 'Hide Indicators' : 'Show Indicators' }}</span>
+      <mat-icon class="chevron" [@rotateChevron]="showIndicators ? 'expanded' : 'collapsed'">expand_more</mat-icon>
+    </button>
+    <button class="elegant-toggle-btn progress-btn" type="button" (click)="openProgressGraph()">
+      <span class="label">Progress Graph</span>
+    </button>
+  </h2>
+  <div class="indicator-toggle" *ngIf="showIndicators">
+    <button mat-button class="toggle-btn" [ngClass]="{ active: activeTab === 'progress' }"
+      (click)="switchTab('progress')">
+      Progress Indicator
+    </button>
+
+    <button mat-button class="toggle-btn" [ngClass]="{ active: activeTab === 'context' }"
+      (click)="switchTab('context')">
+      Context Indicator
+    </button>
+  </div>
+  <!-- ================= PROGRESS INDICATOR TAB ================= -->
+  <div *ngIf="showIndicators && activeTab === 'progress'" class="indicator-grid" [@indicatorExpand]>
+
+    <!-- HEADERS -->
+    <div class="grid-header">Year</div>
+    <div class="grid-header">Progress Indicator</div>
+    <div class="grid-header">Value</div>
+    <div class="grid-header">Data Completeness</div>
+
+    <!-- TOP YEAR -->
+    <ng-container *ngIf="uniqueYearsFromFitnessInputs.length > 0">
+
+      <ng-container *ngFor="let pi of goal.ProgressIndicators; let i = index">
+
+        <div class="grid-item year-cell">{{ uniqueYearsFromFitnessInputs[0] }}</div>
+
+        <div class="grid-item">{{ pi.progress_indicator }}</div>
+
+        <div class="grid-item highlight">
+          {{ calculateProgressIndicator(i, uniqueYearsFromFitnessInputs[0]) }}
+        </div>
+
+        <div class="grid-item highlight">
+          {{
+          i === 0 ? calculateDataCompletenessForGaseous(uniqueYearsFromFitnessInputs[0])
+          : i === 1 ? calculateDataCompletenessForLiquid(uniqueYearsFromFitnessInputs[0])
+          : i === 2 ? calculateDataCompletenessForSolid(uniqueYearsFromFitnessInputs[0])
+          : ''
+          }}
+        </div>
+
+      </ng-container>
+    </ng-container>
+
+    <!-- COLLAPSE TOGGLE -->
+    <div class="grid-item full-width-row" *ngIf="uniqueYearsFromFitnessInputs.length > 1"
+      (click)="showRemaining = !showRemaining">
+      <span>View {{ uniqueYearsFromFitnessInputs.length - 1 }} more years</span>
+      <span class="arrow-icon">{{ showRemaining ? '▲' : '▼' }}</span>
+    </div>
+
+    <!-- REMAINING YEARS -->
+    <ng-container *ngIf="showRemaining">
+      <ng-container *ngFor="let year of uniqueYearsFromFitnessInputs.slice(1)">
+        <ng-container *ngFor="let pi of goal.ProgressIndicators; let i = index">
+
+          <div class="grid-item year-cell">{{ year }}</div>
+
+          <div class="grid-item">{{ pi.progress_indicator }}</div>
+
+          <div class="grid-item highlight">
+            {{ calculateProgressIndicator(i, year) }}
+          </div>
+
+          <div class="grid-item highlight">
+            {{
+            i === 0 ? calculateDataCompletenessForGaseous(year)
+            : i === 1 ? calculateDataCompletenessForLiquid(year)
+            : i === 2 ? calculateDataCompletenessForSolid(year)
+            : ''
+            }}
+          </div>
+
+        </ng-container>
+      </ng-container>
+    </ng-container>
+
+  </div>
+  <!-- ================= CONTEXT INDICATOR TAB ================= -->
+  <div *ngIf="showIndicators && activeTab === 'context'" class="indicator-grid1" [@indicatorExpand]>
+
+    <!-- HEADERS -->
+    <div class="grid-header">Year</div>
+    <div class="grid-header">Context Indicator</div>
+    <div class="grid-header">Unit</div>
+    <div class="grid-header">Value</div>
+
+    <!-- ========== TOP YEAR ========== -->
+    <ng-container *ngIf="uniqueYearsFromFitnessInputs.length > 0">
+
+      <ng-container *ngFor="let ci of goal.ContextIndicators; let i = index">
+
+
+        <ng-container *ngIf="i < 3">
+
+          <div class="grid-item">{{ uniqueYearsFromFitnessInputs[0] }}</div>
+
+          <div class="grid-item">{{ ci.context_indicator }}</div>
+
+          <div class="grid-item">{{ ci.unit }}</div>
+
+          <div class="grid-item highlight">
+            {{ calculateContextIndicator(i, uniqueYearsFromFitnessInputs[0]) }}
+          </div>
+
+        </ng-container>
+
+        <!-- DESCRIPTION ROW (i === 3) -->
+        <ng-container *ngIf="i === 3">
+
+          <div class="grid-item">{{ uniqueYearsFromFitnessInputs[0] }}</div>
+
+          <div class="grid-item">{{ ci.context_indicator }}</div>
+
+          <!-- <div class="grid-item">-</div> -->
+
+          <div class="grid-item highlight merged-description">
+            <ng-container *ngFor="let entry of getContextDescription(uniqueYearsFromFitnessInputs[0])">
+              <div class="context-entry-box">
+                <span class="context-label">{{ entry.siteName }}:</span>
+                <span class="context-value">{{ entry.contextDescription }}</span>
+              </div>
+            </ng-container>
+          </div>
+
+        </ng-container>
+
+      </ng-container>
+
+    </ng-container>
+
+
+    <!-- COLLAPSE -->
+    <div class="grid-item full-width-row" *ngIf="uniqueYearsFromFitnessInputs.length > 1"
+      (click)="showRemaining = !showRemaining">
+      <span>View {{ uniqueYearsFromFitnessInputs.length - 1 }} more years</span>
+      <span class="arrow-icon">{{ showRemaining ? '▲' : '▼' }}</span>
+    </div>
+
+
+    <!-- REMAINING YEARS -->
+    <ng-container *ngIf="showRemaining">
+      <ng-container *ngFor="let year of uniqueYearsFromFitnessInputs.slice(1)">
+        <ng-container *ngFor="let ci of goal.ContextIndicators; let i = index">
+
+          <!-- NORMAL 3 -->
+          <ng-container *ngIf="i < 3">
+
+            <div class="grid-item">{{ year }}</div>
+            <div class="grid-item">{{ ci.context_indicator }}</div>
+            <div class="grid-item">{{ ci.unit }}</div>
+            <div class="grid-item highlight">
+              {{ calculateContextIndicator(i, year) }}
+            </div>
+
+          </ng-container>
+
+          <!-- DESCRIPTION (4th) -->
+          <ng-container *ngIf="i === 3">
+
+            <div class="grid-item">{{ year }}</div>
+            <div class="grid-item">{{ ci.context_indicator }}</div>
+            <!-- <div class="grid-item">-</div> -->
+            <div class="grid-item highlight merged-description">
+              <ng-container *ngFor="let entry of getContextDescription(year)">
+                <div class="context-entry-box">
+                  <span class="context-label">{{ entry.siteName }}:</span>
+                  <span class="context-value">{{ entry.contextDescription }}</span>
+                </div>
+              </ng-container>
+            </div>
+
+          </ng-container>
+
+        </ng-container>
+      </ng-container>
+    </ng-container>
+
+  </div>
+
+
+
+
+  <ng-container *ngIf="sites!.length > 0">
+    <div [formArrayName]="arrayName" class="sites-container">
+      <mat-accordion class="sites-accordion">
+
+        <mat-expansion-panel *ngFor="let site of sites.controls; let i = index" [formGroupName]="i" class="site-panel">
+          <mat-expansion-panel-header class="site-panel-header">
+            <div class="site-header">
+              <div class="site-header-item">
+                <span class="heading">Site Name:</span>
+                <span class="site-title">{{ site.get('siteName')?.value || '-' }}</span>
+              </div>
+              <div class="site-header-item">
+                <span class="heading">Site ID:</span>
+                <span class="site-title">{{ site.get('siteId')?.value || '-' }}</span>
+              </div>
+              <div class="site-header-item">
+                <span class="heading">Location:</span>
+                <span class="site-title">{{ site.get('location')?.value || '-' }}</span>
+              </div>
+            </div>
+
+          </mat-expansion-panel-header>
+
+
+          <div class="row">
+            <div formArrayName="fitnessInputs" class="fitness-inputs-container">
+              <div class="fitness-inputs-header">
+                <h3 class="fitness-inputs-title">Progress indicator data</h3>
+                <button class="add-fitness-btn" mat-flat-button color="primary" type="button"
+                  (click)="addFitnessInput(i)">Add progress data</button>
+              </div>
+              <mat-expansion-panel *ngFor="let input of getFitnessInputs(site).controls; let j = index"
+                [formGroupName]="j" class="row  fitness-input-row">
+                <mat-expansion-panel-header class="site-panel-header fitness-inputs-header">
+                  <div class="site-header">
+                    <div class="site-header-item">
+                      <!-- <span class="site-title">{{ input.get('year')?.value ? (input.get('year')?.value | date:'yyyy') : 'Select year' }}</span> -->
+                      <!-- <span class="site-title" *ngIf="input.get('year')?.value; else selectYear">
+                        {{ input.get('year')?.value | date:'yyyy' }}
+                      </span>
+
+                      <ng-template #selectYear>
+                        Select year
+                      </ng-template> -->
+                      <span class="site-title" *ngIf="isValidYearShow(input.get('year')?.value); else selectYear">
+                        {{ input.get('year')?.value | date:'yyyy' }}
+                      </span>
+
+                      <ng-template #selectYear>
+
+                      </ng-template>
+
+                    </div>
+                  </div>
+                </mat-expansion-panel-header>
+                <div class="row fitness-input-row">
+                  <!-- <div *ngFor="let input of getFitnessInputs(site).controls; let j = index" [formGroupName]="j" class="row  fitness-input-row"> -->
+                  <div class="col-md-4">
+                    <mat-form-field appearance="outline" class="w-100 fitness-input-field">
+                      <mat-label>Year</mat-label>
+                      <input matInput maxlength="4" type="text" [matDatepicker]="yearPicker" formControlName="year"
+                        readonly (click)="yearPicker.open()" />
+                      <mat-datepicker-toggle matSuffix [for]="yearPicker"></mat-datepicker-toggle>
+                      <mat-datepicker #yearPicker startView="multi-year"
+                        (yearSelected)="setYear($event, yearPicker ,i, j)" panelClass="year-picker"></mat-datepicker>
+                      <mat-error *ngIf="input.get('year')?.hasError('duplicateYear') && input.get('year')?.touched">
+                        This year is already in site.
+                      </mat-error>
+                      <mat-error *ngIf="input.get('year')?.hasError('required') && input.get('year')?.touched">
+                        Year is required.
+                      </mat-error>
+                      <mat-error *ngIf="input.get('year')?.hasError('lessThanReference') && input.get('year')?.touched">
+                        Year must be greater than reference year
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                  <div class="col-md-12 label-title">
+                    <p class="decorated"><span>Fitness Input Gaseous Emissions</span></p>
+                  </div>
+                  <div class="col-md-3">
+                    <mat-form-field appearance="outline" class="w-100">
+                      <mat-label> Relevance</mat-label>
+                      <mat-select formControlName="relevanceGaseous" (selectionChange)="calculateSiteFitness(i,j)">
+                        <mat-option *ngFor="let option of relevantsArr" [value]="option.id">
+                          {{ option.name }}
+                        </mat-option>
+                      </mat-select>
+                      <mat-error
+                        *ngIf="input.get('relevanceGaseous')?.hasError('required') && site.get('relevanceGaseous')?.touched">
+                        Relevance is required
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+
+
+
+                  <!-- For K -->
+                  <div class="col-md-2">
+                    <mat-form-field appearance="outline" class="w-100 readonly-field">
+                      <mat-label>Gaseous emissions reference year </mat-label>
+                      <input type="text" matInput formControlName="Gaseousemissionyear" readonly />
+                    </mat-form-field>
+                  </div>
+                  <div class="col-md-2">
+                    <mat-form-field appearance="outline" class="w-100 readonly-field">
+                      <mat-label> Gaseous emissions in reference year value</mat-label>
+                      <input type="text" matInput formControlName="gaseousReferenceYear"
+                        (input)="calculateSiteFitness(i,j)" readonly />
+                    </mat-form-field>
+                    <!-- For Validation in Dropdown  [readonly]="[2, 3, 4, 5].includes(input.get('relevanceGaseous')?.value)" -->
+                  </div>
+                  <div class="col-md-2">
+                    <mat-form-field appearance="outline" class="w-100">
+                      <mat-label> Gaseous emissions in reporting year </mat-label>
+                      <input type="text" appNumberFormatter matInput formControlName="gaseousReportingYear"
+                        [readonly]="[2, 3, 4, 5].includes(input.get('relevanceGaseous')?.value)"
+                        (input)="calculateSiteFitness(i,j)" />
+                    </mat-form-field>
+                  </div>
+
+                  <div class="col-md-2">
+                    <mat-form-field appearance="outline" class="w-100">
+                      <mat-label>Site Fitness </mat-label>
+                      <input type="text" matInput formControlName="gaseousSiteFitnessPercent" readonly />
+                    </mat-form-field>
+                  </div>
+
+
+                  <div class="col-md-12 label-title">
+                    <p class="decorated"><span>Fitness Input Liquid Emissions</span></p>
+                  </div>
+                  <div class="col-md-3">
+                    <mat-form-field appearance="outline" class="w-100">
+                      <mat-label> Relevance</mat-label>
+                      <mat-select formControlName="relevanceLiquid" (selectionChange)="calculateLiquidSiteFitness(i,j)">
+                        <mat-option *ngFor="let option of relevantsArr" [value]="option.id">
+                          {{ option.name }}
+                        </mat-option>
+                      </mat-select>
+                      <mat-error
+                        *ngIf="input.get('relevanceLiquid')?.hasError('required') && site.get('relevanceLiquid')?.touched">
+                        Relevance is required
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+
+                  <div class="col-md-2">
+                    <mat-form-field appearance="outline" class="w-100 readonly-field">
+                      <mat-label>Liquid emissions reference year </mat-label>
+                      <input type="text" matInput formControlName="liquidemissionyear" readonly />
+                    </mat-form-field>
+                  </div>
+                  <div class="col-md-2">
+                    <mat-form-field appearance="outline" class="w-100 readonly-field">
+                      <mat-label> Liquid emissions in reference year value</mat-label>
+                      <input type="text" matInput formControlName="liquidReferenceYear"
+                        (input)="calculateLiquidSiteFitness(i,j)" readonly />
+                    </mat-form-field>
+                    <!-- for validation [readonly]="[2, 3, 4, 5].includes(input.get('relevanceLiquid')?.value)" -->
+                  </div>
+                  <div class="col-md-2">
+                    <mat-form-field appearance="outline" class="w-100">
+                      <mat-label> Liquid emissions in reporting year</mat-label>
+                      <input type="text" appNumberFormatter matInput formControlName="liquidReportingYear"
+                        [readonly]="[2, 3, 4, 5].includes(input.get('relevanceLiquid')?.value)"
+                        (input)="calculateLiquidSiteFitness(i,j)" />
+                    </mat-form-field>
+                  </div>
+
+
+                  <div class="col-md-2">
+                    <mat-form-field appearance="outline" class="w-100">
+                      <mat-label>Site Fitness</mat-label>
+                      <input type="text" matInput formControlName="liquidSiteFitnessPercent" readonly />
+                    </mat-form-field>
+                  </div>
+
+
+                  <div class="col-md-12 label-title">
+                    <p class="decorated"><span>Fitness Input Solid Emissions</span></p>
+                  </div>
+                  <div class="col-md-3">
+                    <mat-form-field appearance="outline" class="w-100">
+                      <mat-label> Relevance</mat-label>
+                      <mat-select formControlName="relevanceSolid" (selectionChange)="calculateSolidSiteFitness(i,j)">
+                        <mat-option *ngFor="let option of relevantsArr" [value]="option.id">
+                          {{ option.name }}
+                        </mat-option>
+
+                      </mat-select>
+                      <mat-error
+                        *ngIf="input.get('relevanceSolid')?.hasError('required') && site.get('relevanceSolid')?.touched">
+                        Relevance is required
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+
+
+
+
+                  <div class="col-md-2">
+                    <mat-form-field appearance="outline" class="w-100 readonly-field">
+                      <mat-label>Solid emissions reference year </mat-label>
+                      <input type="text" matInput formControlName="Solidemissionyear" readonly />
+                    </mat-form-field>
+                  </div>
+                  <div class="col-md-2">
+                    <mat-form-field appearance="outline" class="w-100 readonly-field">
+                      <mat-label> Solid emissions in reference year value</mat-label>
+                      <input type="text" matInput formControlName="solidReferenceYear"
+                        (input)="calculateSolidSiteFitness(i,j)" readonly />
+                    </mat-form-field>
+                    <!-- For validation  [readonly]="[2, 3, 4, 5].includes(input.get('relevanceSolid')?.value)" -->
+                  </div>
+
+                  <div class="col-md-2">
+                    <mat-form-field appearance="outline" class="w-100">
+                      <mat-label> Solid emissions in reporting year value</mat-label>
+                      <input type="text" appNumberFormatter matInput formControlName="solidReportingYear"
+                        [readonly]="[2, 3, 4, 5].includes(input.get('relevanceSolid')?.value)"
+                        (input)="calculateSolidSiteFitness(i,j)" />
+                    </mat-form-field>
+                  </div>
+
+                  <div class="col-md-2">
+                    <mat-form-field appearance="outline" class="w-100 ">
+                      <mat-label> Site Fitness</mat-label>
+                      <input type="text" matInput formControlName="solidSiteFitnessPercent" readonly />
+                    </mat-form-field>
+                  </div>
+                  <!-- <div class="col-md-4">
+                        <mat-form-field appearance="outline" class="w-100">
+                          <mat-label>Comments</mat-label>
+                          <textarea matInput formControlName="comments"></textarea>
+                        </mat-form-field>
+                      </div> -->
+                  <div class="col-md-12">
+                    <mat-form-field appearance="outline" class="w-100 comments-field">
+                      <mat-label>Comments</mat-label>
+                      <textarea matInput formControlName="comments" rows="4"></textarea>
+                    </mat-form-field>
+                  </div>
+                  <div class="col -md-12">
+                    <mat-form-field appearance="outline" class="w-100">
+                      <mat-label>Context Description</mat-label>
+                      <textarea matInput formControlName="contextDescription" (input)="triggerChangeDetection()"
+                        placeholder="Type context details...">
+                                                    </textarea>
+
+
+                    </mat-form-field>
+                  </div>
+                  <div class="col-md-1 text-right">
+                    <button mat-icon-button color="warn" type="button" (click)="removeFitnessInput(i, j)"
+                      [disabled]="getFitnessInputs(site).length === 1" matTooltip="Remove this entry">
+                      <mat-icon>remove_circle</mat-icon>
+                    </button>
+                  </div>
+
+                </div>
+              </mat-expansion-panel>
+            </div>
+          </div>
+
+
+        </mat-expansion-panel>
+
+      </mat-accordion>
+    </div>
+    <div class="next-button-wrapper">
+      <button mat-flat-button color="primary" class="custom-submit-btn" type="button" (click)="submitForm()">
+        <span *ngIf="!loading">Submit</span>
+        <!-- <mat-spinner  diameter="24"></mat-spinner> -->
+        <mat-spinner *ngIf="loading" [diameter]="40" color="accent"></mat-spinner></button>
+    </div>
+  </ng-container>
+
+</div>
+
+<ng-template #progressGraphDialog>
+
+  <div class="dialog-header">
+
+    <h2 mat-dialog-title>
+      Annual Progress Trajectory
+    </h2>
+
+    <button mat-icon-button mat-dialog-close class="close-btn">
+      <mat-icon>close</mat-icon>
+    </button>
+
+  </div>
+
+  <mat-dialog-content>
+
+    <div class="graph-container">
+      <div class="left-graph" *ngIf="chartOptions">
+        <div class="context-unit" *ngIf="contextUnit">
+          {{ contextUnit }}
+        </div>
+        <apx-chart [series]="chartOptions.series" [chart]="chartOptions.chart" [xaxis]="chartOptions.xaxis"
+          [yaxis]="chartOptions.yaxis" [stroke]="chartOptions.stroke" [plotOptions]="chartOptions.plotOptions" [tooltip]="chartOptions.tooltip">
+        </apx-chart>
+      </div>
+    </div>
+  </mat-dialog-content>
+</ng-template>

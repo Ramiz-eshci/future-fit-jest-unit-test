@@ -1,0 +1,137 @@
+<mat-card class="cardWithShadow theme-card">
+    <mat-card-header>
+        <mat-card-title class="m-b-0">Edit {{title}}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="b-t-1">
+        <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()" autocomplete="off">
+            <div class="row">
+                <div class="col-lg-6" *ngIf="RoleID == 1">
+                    <mat-label class="f-w-600 m-b-8 d-block">Company</mat-label>
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-select formControlName="CompanyID" placeholder="Select Company">
+                            @for(option of companyArr; track option.id) {
+                            <mat-option [value]="option.id">{{
+                                option.name
+                                }}</mat-option>
+                            }
+                        </mat-select>
+                    </mat-form-field>
+                    <validation-messages [control]="employeeForm.controls.CompanyID"></validation-messages>
+                </div>
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Site Name</mat-label>
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-select formControlName="SiteID" placeholder="Select Poduct Type">
+                            @for(option of sitesArr; track option.id) {
+                            <mat-option [value]="option.id">{{
+                                option.name
+                                }}</mat-option>
+                            }
+                        </mat-select>
+                    </mat-form-field>
+                    <validation-messages [control]="employeeForm.controls.SiteID"></validation-messages>
+                </div>
+
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Employee Group</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput placeholder="Employee Group" formControlName="EmployeeGroup" />
+                    </mat-form-field>
+                    <validation-messages [control]="employeeForm.controls.EmployeeGroup"></validation-messages>
+                    <div *ngIf="employeeForm.controls.EmployeeGroup.touched && employeeForm.controls.EmployeeGroup.errors?.pattern"
+                        class="error-text">
+                         Only letters, numbers and (. _ &amp; &#64; # $ % ^ -) are allowed</div>
+                </div>
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Group ID</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput placeholder="Group ID" formControlName="GroupID" />
+                    </mat-form-field>
+                    <validation-messages [control]="employeeForm.controls.GroupID"></validation-messages>
+                    <div *ngIf="employeeForm.controls.GroupID.touched && employeeForm.controls.GroupID.errors?.pattern"
+                        class="error-text">
+                         Only letters, numbers and (. _ &amp; &#64; # $ % ^ -) are allowed</div>
+                </div>
+                <div formArrayName="yearlyData" class="col-12">
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <mat-label class="f-w-600">Yearly Employee Details</mat-label>
+                        <button mat-stroked-button color="primary" type="button" (click)="addYearGroup()">
+                            <mat-icon>add</mat-icon> Add Year
+                        </button>
+                    </div>
+
+                    <div *ngFor="let group of yearlyData.controls; let i = index" [formGroupName]="i"
+                        class="row align-items-start mb-2">
+                        
+                        <div class="col-lg-5">
+                            <mat-label class="f-w-600 m-b-8 d-block">Year</mat-label>
+                            <mat-form-field appearance="outline" class="w-100">
+                                <input matInput [matDatepicker]="yearPicker" readonly placeholder="Select Year"
+                                    (click)="yearPicker.open()" formControlName="Year" autocomplete="off" />
+
+                                <mat-datepicker-toggle matSuffix [for]="yearPicker"></mat-datepicker-toggle>
+
+                                <mat-datepicker #yearPicker startView="multi-year"
+                                    (yearSelected)="selectYear($event, yearPicker, i)"
+                                    panelClass="year-picker"></mat-datepicker>
+                            </mat-form-field>
+
+                            <div *ngIf="group.get('Year')?.touched && group.get('Year')?.errors?.['required']"
+                                class="error-text">
+                                Year is required
+                            </div>
+
+                            <div *ngIf="group.get('Year')?.touched && group.get('Year')?.errors?.['duplicateYear']"
+                                class="error-text">
+                                This year is already added, please select another year.
+                            </div>
+                        </div>
+
+                        <div class="col-lg-5">
+                            <mat-label class="f-w-600 m-b-8 d-block">Number Of Employees</mat-label>
+                            <mat-form-field appearance="outline" class="w-100" color="primary">
+                                <!-- <input matInput placeholder="Number Of Employees" formControlName="NumberOfEmployees"
+                                    pattern="^[0-9]+$" inputmode="numeric" /> -->
+                                    <input
+  matInput
+  placeholder="Number Of Employees"
+  formControlName="NumberOfEmployees"
+  inputmode="numeric"
+  (input)="onNumberInput($event, group)"
+/>
+
+                            </mat-form-field>
+                            <div *ngIf="group.get('NumberOfEmployees')?.touched && group.get('NumberOfEmployees')?.errors?.['pattern']"
+                                class="error-text">
+                                Only numbers are allowed
+                            </div>
+                            <div *ngIf="group.get('NumberOfEmployees')?.touched && group.get('NumberOfEmployees')?.errors?.['required']"
+                                class="error-text">
+                                Number of employees is required
+                            </div>
+                        </div>
+
+                        <div class="col-lg-2 d-flex justify-content-start">
+                            <button mat-mini-fab color="warn" type="button" [disabled]="yearlyData.length == 1"
+                                (click)="removeYearGroup(i)" class="remove-btn">
+                                <mat-icon>remove</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="m-t-12">
+                <!-- <button mat-flat-button color="primary" class="m-r-8">Submit</button> -->
+                <button type="submit" mat-flat-button color="primary" value="Submit" class="m-r-8"
+                    [disabled]="loading || !employeeForm.valid">
+                    <span *ngIf="!loading">Submit</span>
+                    <!-- <mat-spinner  diameter="24"></mat-spinner> -->
+                    <mat-spinner *ngIf="loading" [diameter]="40" color="accent"></mat-spinner>
+                </button>
+                <a [routerLink]="['/employee']" #tooltip="matTooltip" matTooltip="Back to {{title}} list"
+                    matTooltipPosition="right" mat-stroked-button color="warn">Cancel</a>
+            </div>
+        </form>
+    </mat-card-content>
+</mat-card>

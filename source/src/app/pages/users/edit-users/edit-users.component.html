@@ -1,0 +1,109 @@
+<mat-card class="cardWithShadow theme-card">
+    <mat-card-header>
+        <mat-card-title class="m-b-0">Add {{title}}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="b-t-1">
+        <form [formGroup]="userForm" (ngSubmit)="onSubmit()" autocomplete="off">
+            <div class="row"> 
+                <div class="col-lg-6" *ngIf="RoleID == 1"> 
+                    <mat-label class="f-w-600 m-b-8 d-block">Company</mat-label>
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-select formControlName="CompanyID"  placeholder="Select Company">
+                            @for(option of companyArr; track option.id) {
+                            <mat-option [value]="option.id">{{
+                                option.name
+                                }}</mat-option>
+                            }
+                        </mat-select>
+                    </mat-form-field>
+                    <validation-messages [control]="userForm.controls.CompanyID"></validation-messages>
+                </div>
+
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">First Name</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput type="text" placeholder="First Name" formControlName="FirstName" />
+                    </mat-form-field>
+                    <validation-messages [control]="userForm.controls.FirstName"></validation-messages>
+                </div>
+                
+                 <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Last Name</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput type="text" placeholder="Last Name" formControlName="LastName" />
+                    </mat-form-field>
+                    <validation-messages [control]="userForm.controls.LastName"></validation-messages>
+                </div>
+                 
+                 <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Email</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput placeholder="Email" formControlName="Email" /> 
+                    </mat-form-field>
+                    <validation-messages [control]="userForm.controls.Email"></validation-messages>
+                </div>
+               
+                <div class="col-lg-6">
+                    <!-- input -->
+                    <mat-label class="f-w-600 m-b-8 d-block">Mobile Number</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                        <input matInput type="text" placeholder="Mobile Number " formControlName="phone_number"/>
+                    </mat-form-field>
+                    <div class="text-danger" *ngIf="userForm.controls.phone_number.errors?.pattern && userForm.controls.phone_number.touched">
+  Enter a valid mobile number (10–12 digits, optional + at start)
+</div>
+                    <validation-messages [control]="userForm.controls.phone_number"></validation-messages>
+                </div>
+                 <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Assign BE-Form</mat-label>
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-select formControlName="be_forms" multiple placeholder="Select BE Forms">
+                              <mat-select-trigger>
+        {{ getSelectedBEFormNames() }}
+    </mat-select-trigger>
+
+    <mat-option
+        [value]="'SELECT_ALL'"
+        #allSelected
+        (click)="toggleAllSelection()">
+
+        Select All BE Forms
+
+    </mat-option>
+                            <mat-option *ngFor="let form of beFormList" [value]="form.id">{{ form.name }}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <validation-messages [control]="userForm.controls.be_forms"></validation-messages>
+                </div>
+                <div class="col-lg-6">
+
+                    <mat-label class="f-w-600 m-b-8 d-block">
+                        Role
+                    </mat-label>
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-select formControlName="RoleId" placeholder="Select Role">
+                            <mat-option *ngFor="let role of roleArr" [value]="role.role_id">
+                                {{role.role_name}}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <validation-messages [control]="userForm.controls.RoleId">
+                    </validation-messages>
+                </div>
+               
+            </div>
+
+           
+
+            <div class="m-t-12"> 
+                <button type="submit" mat-flat-button color="primary" value="Submit" class="m-r-8"
+                    [disabled]="loading || !userForm.valid">
+                    <span *ngIf="!loading">Submit</span> 
+                    <mat-spinner *ngIf="loading" [diameter]="40" color="accent"></mat-spinner>
+                </button> 
+                <a [routerLink]="['/users']" #tooltip="matTooltip" matTooltip="Back to {{title}} List"
+                    matTooltipPosition="above" mat-stroked-button color="warn">Cancel</a>
+            </div>
+        </form>
+    </mat-card-content>
+</mat-card>

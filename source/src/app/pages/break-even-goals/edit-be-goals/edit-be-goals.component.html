@@ -1,0 +1,154 @@
+<mat-card class="cardWithShadow theme-card">
+  <mat-card-header>
+    <!-- <mat-card-title class="m-b-0">Edit {{title}}</mat-card-title> -->
+    <mat-card-title class="m-b-0">
+      <ng-container *ngIf="RoleID != 1" style="margin-right: 15px;">
+        <a [routerLink]="['/break-even-goals']" #tooltip="matTooltip" matTooltip="Back to {{title}} List"
+          matTooltipPosition="above" mat-flat-button color="primary">Back</a>
+      </ng-container>
+      {{ (RoleID != 1) ? 'View' : 'Edit' }} {{ title }}
+    </mat-card-title>
+
+  </mat-card-header>
+  <mat-card-content class="b-t-1">
+    <form [formGroup]="breakEvenGoalForm" (ngSubmit)="onSubmit()" autocomplete="off">
+
+
+      <div class="mt-4">
+        <!-- GOAL SECTION -->
+        <div class="card shadow-sm rounded mb-4 p-4">
+          <h4 class="mb-4 text-primary">Break Even Goal</h4>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <mat-label class="fw-bold mb-2 d-block">Goal Name</mat-label>
+              <mat-form-field appearance="outline" class="w-100" color="primary">
+                <input matInput placeholder="Enter goal name" formControlName="GoalName" [readonly]="RoleID != 1" />
+              </mat-form-field>
+              <validation-messages [control]="breakEvenGoalForm.controls.GoalName"></validation-messages>
+            </div>
+
+            <div class="col-md-2 mb-3">
+              <mat-label class="fw-bold mb-2 d-block">Goal Code</mat-label>
+              <mat-form-field appearance="outline" class="w-100" color="primary">
+                <input matInput placeholder="Enter goal code" formControlName="GoalCode" readonly />
+              </mat-form-field>
+              <mat-error *ngIf="breakEvenGoalForm.controls.GoalCode.hasError('pattern')">
+                Special characters are not allowed.
+              </mat-error>
+              <validation-messages [control]="breakEvenGoalForm.controls.GoalCode"></validation-messages>
+            </div>
+            <div class="col-md-4 mb-3">
+              <mat-label class="fw-bold mb-2 d-block">Goal Short Name</mat-label>
+              <mat-form-field appearance="outline" class="w-100" color="primary">
+                <input matInput placeholder="Enter goal Short Name" formControlName="GoalShortName" [readonly]="RoleID != 1" />
+              </mat-form-field>
+              <validation-messages [control]="breakEvenGoalForm.controls.GoalShortName"></validation-messages>
+            </div>
+            <div class="col-md-12 mb-3">
+              <mat-label class="fw-bold mb-2 d-block">Fitness Criteria</mat-label>
+              <mat-form-field appearance="outline" class="w-100" color="primary">
+                <textarea matInput formControlName="FitnessCriteria" placeholder="Fitness Criteria" rows="5" [readonly]="RoleID != 1"></textarea>
+              </mat-form-field>
+              <validation-messages [control]="breakEvenGoalForm.controls.FitnessCriteria"></validation-messages>
+            </div>
+            <div class="col-md-12 mb-3">
+              <mat-label class="fw-bold mb-2 d-block">Notes</mat-label>
+              <mat-form-field appearance="outline" class="w-100" color="primary">
+                <textarea matInput formControlName="Notes" placeholder="Notes" rows="5" [readonly]="RoleID != 1"></textarea>
+              </mat-form-field>
+              <validation-messages [control]="breakEvenGoalForm.controls.Notes"></validation-messages>
+            </div>
+          </div>
+        </div>
+
+        <!-- PROGRESS INDICATORS -->
+        <div class="card shadow-sm rounded mb-4 p-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0 text-secondary">Progress Indicators</h5>
+            <ng-container *ngIf="RoleID == 1">
+              <button mat-raised-button color="accent" type="button" (click)="addProgressIndicator()">
+                <mat-icon>add</mat-icon> Add
+              </button>
+            </ng-container>
+          </div>
+          <div formArrayName="ProgressIndicators">
+            <div class="row mb-3 p-3 rounded border" *ngFor="let group of progressIndicators.controls; let i = index"
+              [formGroupName]="i">
+              <div class="col-md-5 mb-2">
+                <mat-label class="fw-medium mb-1">Progress Indicator</mat-label>
+                <mat-form-field appearance="fill" class="w-100">
+                  <input matInput formControlName="progress_indicator" placeholder="Enter indicator" [readonly]="RoleID != 1" />
+                </mat-form-field>
+              </div>
+
+              <!-- <div class="col-md-5 mb-2">
+                <mat-label class="fw-medium mb-1">Data Completeness</mat-label>
+                <mat-form-field appearance="fill" class="w-100">
+                  <input matInput formControlName="data_completeness" placeholder="Enter data completeness" />
+                </mat-form-field>
+              </div> -->
+
+              <div class="col-md-2 text-end" *ngIf="RoleID == 1">
+                <button mat-icon-button color="warn" type="button" (click)="removeProgressIndicator(i)"
+                  *ngIf="progressIndicators.length > 1">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTEXT INDICATORS -->
+        <div class="card shadow-sm rounded mb-4 p-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0 text-secondary">Context Indicators</h5>
+            <ng-container *ngIf="RoleID == 1">
+              <button mat-raised-button color="accent" type="button" (click)="addContextIndicator()">
+                <mat-icon>add</mat-icon> Add
+              </button>
+            </ng-container>
+          </div>
+          <div formArrayName="ContextIndicators">
+            <div class="row mb-3 p-3 rounded border" *ngFor="let group of contextIndicators.controls; let i = index"
+              [formGroupName]="i">
+              <div class="col-md-5 mb-2">
+                <mat-label class="fw-medium mb-1">Context Indicator</mat-label>
+                <mat-form-field appearance="fill" class="w-100">
+                  <input matInput formControlName="context_indicator" placeholder="Enter context indicator" [readonly]="RoleID != 1" />
+                </mat-form-field>
+              </div>
+
+              <div class="col-md-5 mb-2">
+                <mat-label class="fw-medium mb-1">Unit</mat-label>
+                <mat-form-field appearance="fill" class="w-100">
+                  <input matInput formControlName="unit" placeholder="Enter unit" [readonly]="RoleID != 1" />
+                </mat-form-field>
+              </div>
+
+              <div class="col-md-2 text-end" *ngIf="RoleID == 1">
+                <button mat-icon-button color="warn" type="button" (click)="removeContextIndicator(i)"
+                  *ngIf="contextIndicators.length > 1">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ng-container *ngIf="RoleID == 1">
+        <div class="m-t-12">
+          <!-- <button mat-flat-button color="primary" class="m-r-8">Submit</button> -->
+          <button type="submit" mat-flat-button color="primary" value="Submit" class="m-r-8"
+            [disabled]="loading || !breakEvenGoalForm.valid">
+            <span *ngIf="!loading">Submit</span>
+
+            <mat-spinner *ngIf="loading" [diameter]="40" color="accent"></mat-spinner>
+          </button>
+          <a [routerLink]="['/break-even-goals']" #tooltip="matTooltip" matTooltip="Back to {{title}} List"
+            matTooltipPosition="above" mat-stroked-button color="warn">Cancel</a>
+        </div>
+      </ng-container>
+    </form>
+  </mat-card-content>
+</mat-card>

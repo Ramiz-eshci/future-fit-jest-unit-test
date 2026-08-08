@@ -1,0 +1,94 @@
+<mat-card class="cardWithShadow theme-card">
+    <mat-card-header>
+        <mat-card-title class="m-b-0">Add {{title}}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="b-t-1">
+        <form [formGroup]="tutorialVideoForm" (ngSubmit)="onSubmit()"
+            autocomplete="off">
+            <div class="row">
+                <!-- *ngIf="RoleID == 1" -->
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Video
+                        Title</mat-label>
+                    <mat-form-field appearance="outline" class="w-100">
+                        <input matInput type="text" placeholder="Video Title"
+                            formControlName="VideoTitle" />
+                    </mat-form-field>
+                    <validation-messages
+                        [control]="tutorialVideoForm.controls.VideoTitle"></validation-messages>
+                </div>
+
+                <!-- <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Video Type</mat-label>
+                    <mat-form-field appearance="outline" class="w-100" color="primary">
+                         <mat-select formControlName="VideoType"  placeholder="Video Type">
+                           <mat-option value="YOUTUBE">YOUTUBE</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <validation-messages [control]="tutorialVideoForm.controls.VideoType"></validation-messages>
+                </div> -->
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Video URL</mat-label>
+                    <mat-form-field appearance="outline" class="w-100">
+                         <input matInput type="text" placeholder="Video URL" formControlName="VideoURL" />
+                    </mat-form-field>
+                    <validation-messages [control]="tutorialVideoForm.controls.VideoURL"></validation-messages>
+                </div>
+                <!-- <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Video</mat-label>
+
+                    <div class="file-upload-container">
+                        <input type="file" (change)="onFileSelected($event)"
+                            accept=".mp4,.mov,.avi,.mkv" #fileInput hidden />
+                        <button mat-raised-button color="primary" type="button"
+                            (click)="resetAndChooseFile(fileInput)">
+                            Choose Video
+                        </button>
+
+                    </div>
+                    <span class="file-name" *ngIf="selectedFile">{{
+                        selectedFile.name }}</span>
+                    <p *ngIf="errorMsg" class="error-text">{{ errorMsg
+                        }}</p>
+                </div> -->
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">Display
+                        Order</mat-label>
+                    <mat-form-field appearance="outline" class="w-100">
+                        <input matInput type="text" placeholder="Display Order"
+                            (keydown)="onNumberInput($event)" maxlength="3"
+                            formControlName="OrderBy" />
+                    </mat-form-field>
+                    <validation-messages
+                        [control]="tutorialVideoForm.controls.OrderBy"></validation-messages>
+                </div>
+
+            </div>
+
+            <div class="m-t-12">
+                <!-- <button mat-flat-button color="primary" class="m-r-8">Submit</button> -->
+                <button
+                    type="submit"
+                    mat-flat-button
+                    color="primary"
+                    class="submit-btn m-r-8"
+                    
+                    [disabled]="loading || tutorialVideoForm.invalid">
+
+                    <ng-container *ngIf="!loading; else loadingTpl">
+                        Submit
+                    </ng-container>
+
+                    <ng-template #loadingTpl>
+                        <mat-spinner diameter="20" color="accent"></mat-spinner>
+                    </ng-template>
+
+                </button>
+                <a [routerLink]="['/tutorial-videos']" #tooltip="matTooltip"
+                    matTooltip="Back to {{title}} List"
+                    matTooltipPosition="above" mat-stroked-button
+                    color="warn">Cancel</a>
+            </div>
+        </form>
+    </mat-card-content>
+</mat-card>

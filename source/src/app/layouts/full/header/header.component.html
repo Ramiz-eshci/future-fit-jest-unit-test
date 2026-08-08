@@ -1,0 +1,79 @@
+<mat-toolbar class="topbar">
+  <!-- Mobile Menu -->
+  <!-- @if(!showToggle) { -->
+  <button mat-mini-fab color="inherit" (click)="toggleMobileNav.emit()"
+    class="d-flex justify-content-center">
+    <i class="iconify icon-20 custom-icon d-flex"
+      data-icon="solar:hamburger-menu-line-duotone"></i>
+  </button>
+  <!-- } -->
+  <!-- --------------------------------------------------------------- -->
+  <!-- Notification Dropdown -->
+  <!-- --------------------------------------------------------------- -->
+  <!-- <button
+    mat-mini-fab
+    color="inherit"
+    aria-label="Notifications"
+    class="d-flex justify-content-center"
+  >
+    <span  matBadge="1" matBadgeOverlap="false" matBadgeSize="small">
+      <i class="iconify icon-20 d-flex" data-icon="solar:bell-line-duotone"></i>
+    </span>
+  </button> -->
+
+  <span class="flex-1-auto"></span>
+  <!-- <span>
+    
+    <a
+  routerLink="/risk-profiler/help"
+  class="help-icon-link" style="color: #0f92b2;"
+>
+  <span
+    class="iconify routeIcon"
+    data-icon="lets-icons:video-fill"
+  ></span>
+  Help
+</a>
+  </span> -->
+  <a routerLink="/risk-profiler/help">
+ <button *ngIf="RoleID != 1" mat-raised-button color="primary"
+    class="tour-button">
+    <mat-icon class="mr-2">video_library</mat-icon>
+    Tour Videos
+  </button>
+</a>
+  <button *ngIf="RoleID != 1" mat-raised-button color="primary"
+    id="tour-button1" (click)="onStartTourClick()" class="tour-button">
+    <mat-icon class="mr-2">rocket_launch</mat-icon>
+    Get Started
+  </button>
+
+  <a href="javascript:;" mat-flat-button>Hi, {{userName}}</a>
+
+  <button mat-fab extended color="inherit" [matMenuTriggerFor]="profilemenu"
+    aria-label="Notifications"
+    class="d-flex justify-content-center profile-btn-dd">
+
+    <!-- <img src="/assets/images/profile/user-1.jpg" class="rounded-circle object-cover icon-35 profile-dd" width="35" /> -->
+    <img [src]="profilePic"
+      class="rounded-circle object-cover icon-35 profile-dd" width="35" />
+
+  </button>
+  <mat-menu #profilemenu="matMenu" class="topbar-dd cardWithShadow">
+
+    <a mat-menu-item [routerLink]="['/update-profile']">
+      <mat-icon class="d-flex align-items-center"><i
+          data-icon="solar:shield-user-line-duotone"
+          class="iconify icon-22"></i></mat-icon>My Profile
+    </a>
+    <a mat-menu-item [routerLink]="['/change-password']">
+      <mat-icon class="d-flex align-items-center"><i
+          data-icon="mdi:password-check-outline"
+          class="iconify icon-22"></i> </mat-icon>Change Password
+    </a>
+    <div class="p-x-12 m-t-12">
+      <button (click)="logout()" mat-stroked-button color="primary"
+        class="w-100">Logout</button>
+    </div>
+  </mat-menu>
+</mat-toolbar>

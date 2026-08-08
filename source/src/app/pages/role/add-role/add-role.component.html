@@ -1,0 +1,176 @@
+<mat-card class="cardWithShadow theme-card">
+
+    <mat-card-header>
+        <mat-card-title>
+            Add {{title}}
+        </mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content class="b-t-1">
+
+        <form [formGroup]="roleForm" (ngSubmit)="onSubmit()">
+
+            <div class="row">
+
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">
+                        Role Name
+                    </mat-label>
+                    <mat-form-field appearance="outline" class="w-100">
+                        <input matInput placeholder="Role Name" formControlName="RoleName">
+                    </mat-form-field>
+                    <mat-error *ngIf="
+                                    roleForm.controls['RoleName'].touched
+                                    && roleForm.controls['RoleName'].errors?.['required']
+                                    ">
+                        Role Name required
+                    </mat-error>
+                </div>
+
+
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">
+                        Access Level
+                    </mat-label>
+                    <mat-form-field appearance="outline" class="w-100">
+                        <input matInput placeholder="Access Level" formControlName="AccessLevel">
+                    </mat-form-field>
+                    <mat-error *ngIf="
+                                    roleForm.controls['AccessLevel'].touched
+                                    && roleForm.controls['AccessLevel'].errors?.['required']
+                                    ">
+                        Access Level required
+                    </mat-error>
+                </div>
+
+                <div class="col-lg-6">
+
+                    <mat-label class="f-w-600 m-b-8 d-block">
+                        Status
+                    </mat-label>
+
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-select formControlName="Status">
+                            <mat-option [value]="1">
+                                Active
+                            </mat-option>
+                            <mat-option [value]="0">
+                                Inactive
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+                <div class="col-lg-6">
+                    <mat-label class="f-w-600 m-b-8 d-block">
+                        Description
+                    </mat-label>
+                    <mat-form-field appearance="outline" class="w-100">
+                        <input matInput type="text" placeholder="Enter Description" formControlName="Description">
+                    </mat-form-field>
+                </div>
+
+                <div class="col-lg-12">
+                    <div class="permission-container">
+                        <h2 class="permission-heading">
+                            Permissions
+                        </h2>
+                        <div class="row">
+                            <div class="col-lg-6" *ngFor="let item of permissionData">
+                                <div class="parent-menu">
+                                    <div class="menu-header" (click)="toggleMenu(item.MenuId)">
+                                        <div class="menu-title">
+                                            <mat-checkbox  [checked]="selectedPermissions.includes(item.MenuId)"
+                                             (change)="toggleParentPermission( item, $event.checked )">
+                                                {{item.MenuName}}
+                                            </mat-checkbox>
+                                            <span class="spacer"></span>
+                                            <mat-icon>
+
+                                                {{
+                                                expandedMenus[item.MenuId]
+                                                ? 'keyboard_arrow_down'
+                                                : 'keyboard_arrow_right'
+                                                }}
+
+                                            </mat-icon>
+                                        </div>
+                                    </div>
+
+                                    <!-- Child Menus -->
+                                    <div class="child-container" *ngIf="
+                        item.children?.length
+                        && expandedMenus[item.MenuId]
+                    ">
+
+                                        <div class="child-menu" *ngFor="let child of item.children">
+                                            <div class="child-header" (click)="toggleChildMenu(child.MenuId)">
+                                                <div class="child-title">
+                                                 <mat-checkbox [checked]="selectedPermissions.includes(child.MenuId)"
+                                                  (change)="togglePermission(  child.MenuId,  $event.checked )">
+                                                        {{child.MenuName}}
+                                                    </mat-checkbox>
+                                                </div>
+                                                <mat-icon>
+                                                    {{ expandedChildren[child.MenuId] ? 'keyboard_arrow_down'  : 'keyboard_arrow_right'  }}
+                                                </mat-icon>
+                                            </div>
+                                            <!-- Actions -->
+                                            <div class="action-list row" *ngIf="
+                                                         child.actions?.length
+                                                         && expandedChildren[child.MenuId]
+                                                     ">
+                                                <div class="action-list row" *ngIf="
+                                                           child.actions?.length
+                                                           && expandedChildren[child.MenuId]
+                                                       ">
+                                                    <div class="col-lg-6 col-md-6" *ngFor="let action of child.actions">
+                                                        <div class="action-item">
+                                                            <mat-checkbox 
+                                                           [checked]="selectedPermissions.includes(action.MenuId)"
+                                                            (change)="togglePermission( action.MenuId, $event.checked )">
+                                                                {{action.MenuName}}
+                                                            </mat-checkbox>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="m-t-12">
+
+                <button type="submit" mat-flat-button color="primary" [disabled]="loading">
+
+                    <span *ngIf="!loading">
+                        Submit
+                    </span>
+
+                    <mat-spinner *ngIf="loading" [diameter]="30">
+                    </mat-spinner>
+                </button>
+
+                <a [routerLink]="['/role']" mat-stroked-button color="warn" class="m-l-10">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </mat-card-content>
+
+</mat-card>

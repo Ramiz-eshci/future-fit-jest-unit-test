@@ -1,0 +1,314 @@
+<div [formGroup]="parentForm">
+  <h2>
+    {{ goal.goal_code }} - {{ goal.goal_name }} - ({{goal.goal_short_name}})
+    <mat-icon matTooltip="Fitness Criteria: {{ goal.fitness_criteria }}" matTooltipPosition="below" class="info-icon"
+      aria-label="Fitness Criteria">info</mat-icon>
+
+    <mat-icon matTooltip="Notes: {{ goal.notes }}" matTooltipPosition="above" class="info-icon"
+      aria-label="Notes">notes</mat-icon>
+
+    <!-- <button (click)="toggleIndicators()" class="elegant-toggle-btn" type="button">
+      <span class="label">{{ showIndicators ? 'Hide Indicators' : 'Show Indicators' }}</span>
+      <mat-icon class="chevron" [@rotateChevron]="showIndicators ? 'expanded' : 'collapsed'">expand_more</mat-icon>
+    </button> -->
+
+  </h2>
+
+  <!-- <div class="indicator-grid" *ngIf="showIndicators" [@indicatorExpand]>
+    <div class="grid-header span-2">Progress Indicator</div>
+    <div class="grid-header">Data Completeness</div>
+    <div class="grid-header span-2">Context Indicator</div>
+    <div class="grid-header">Unit</div>
+
+    <ng-container *ngFor="let pi of goal.ProgressIndicators; let i = index">
+      <div class="grid-item">{{ pi.progress_indicator }}</div>
+      <div class="grid-item highlight">{{ calculateProgressIndicator() }}</div>
+
+      <div class="grid-item highlight">{{ dataCompletenessStatus }}</div>
+      <div class="grid-item">{{ goal.ContextIndicators[i]?.context_indicator || '-' }}</div>
+
+
+      <div class="grid-item">{{ calculateContextIndicator() }}</div>
+      <div class="grid-item">{{ goal.ContextIndicators[i]?.unit || '-' }}</div>
+    </ng-container>
+
+    <ng-container *ngFor="let ci of goal.ContextIndicators; let i = index">
+      <div *ngIf="i >= goal.ProgressIndicators.length" class="grid-item">{{ ci.context_indicator || '-' }}</div>
+      <div *ngIf="i >= goal.ProgressIndicators.length" class="grid-item">{{ calculateContextIndicator() }}</div>
+      <div *ngIf="i >= goal.ProgressIndicators.length" class="grid-item">{{ ci.unit || '-' }}</div>
+    </ng-container>
+  </div> -->
+  <ng-container *ngIf="sites!.length > 0">
+    <div [formArrayName]="arrayName" class="sites-container">
+      <mat-accordion>
+
+        <mat-expansion-panel *ngFor="let site of sites.controls; let i = index" [formGroupName]="i" class="site-panel"
+          [expanded]="i === 0">
+          <mat-expansion-panel-header class="site-panel-header fitness-inputs-header">
+
+            <div class="header-container">
+              <div class="header-title">
+                {{ site.get('siteName')?.value }} | {{ site.get('siteId')?.value }} | {{ site.get('location')?.value
+                }}
+              </div>
+              <button mat-flat-button color="primary" class="add-fitness-btn" type="button"
+                (click)="addFitnessInput(i)">
+                Add Fitness Input
+              </button>
+            </div>
+
+          </mat-expansion-panel-header>
+
+          <!-- <div class="row"> -->
+          <!-- SITE INFORMATION -->
+          <!-- <div class="col-md-4">
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Site Name</mat-label>
+                <input matInput formControlName="siteName" readonly />
+              </mat-form-field>
+            </div>
+            <div class="col-md-4">
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Site ID</mat-label>
+                <input matInput formControlName="siteId" readonly />
+              </mat-form-field>
+            </div>
+            <div class="col-md-4">
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Location</mat-label>
+                <input matInput formControlName="location" readonly />
+              </mat-form-field>
+            </div> -->
+          <!-- </div> -->
+
+          <div class="row">
+
+
+          </div>
+
+          <!-- <div class="row"> -->
+          <!-- <div class="col-md-12 label-title">
+              <p class="decorated"><span>Fitness Input</span></p>
+            </div> -->
+          <div formArrayName="fitnessInputs" class="fitness-inputs-container">
+            <!-- <div class="fitness-inputs-header">
+              <h3 class="fitness-inputs-title">Fitness Inputs</h3>
+              <button class="add-fitness-btn" mat-flat-button color="primary" type="button"
+                (click)="addFitnessInput(i)">Add Fitness
+                Input</button>
+            </div> -->
+            <div *ngFor="let input of getFitnessInputs(site).controls; let j = index" [formGroupName]="j"
+              class="row  fitness-input-row">
+
+              <div class="col-md-4">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Relevance</mat-label>
+                  <mat-select formControlName="relevance" (selectionChange)="onRelevanceChange(i,j)">
+                    <mat-option *ngFor="let option of relevantsArr" [value]="option.id">
+                      {{ option.name }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="site.get('relevance')?.hasError('required') && site.get('relevance')?.touched">
+                    Relevance is required
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="col-md-3">
+                <mat-form-field appearance="outline" class="w-100 fitness-input-field">
+                  <mat-label>Year</mat-label>
+                  <input matInput maxlength="4" type="text" [matDatepicker]="yearPicker" formControlName="year" />
+                  <mat-datepicker-toggle matSuffix [for]="yearPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #yearPicker startView="multi-year" (yearSelected)="setYear($event, yearPicker ,i, j)"
+                    panelClass="year-picker"></mat-datepicker>
+                  <!-- <mat-error *ngIf="input.get('year')?.hasError('required') && input.get('year')?.touched">
+                    Year is required
+                  </mat-error>
+                  <mat-error *ngIf="input.get('year')?.hasError('pattern') && input.get('year')?.touched">
+                    Please enter a valid 4-digit
+                  </mat-error> -->
+                </mat-form-field>
+              </div>
+
+              <div class="col-md-3">
+                <mat-form-field appearance="outline" class="w-100 fitness-input-field">
+                  <mat-label>Renewable Energy Used</mat-label>
+                  <input type="text" matInput formControlName="renewableEnergyUsed"
+                    (input)="calculateSiteFitness(i, j);" appNumberFormat />
+                  <!-- <input type="text" matInput formControlName="renewableEnergyUsed"
+                  [value]="formatNumber(getFormGroup(input).get('renewableEnergyUsed')?.value)"
+                   (input)="calculateSiteFitness(i, j); onNumberInput($event, getFormGroup(input), 'renewableEnergyUsed');"  /> -->
+                </mat-form-field>
+              </div>
+
+              <div class="col-md-3">
+                <mat-form-field appearance="outline" class="w-100 fitness-input-field">
+                  <mat-label>Total Energy Used</mat-label>
+                  <input type="text" matInput formControlName="totalEnergyUsed" (input)="calculateSiteFitness(i, j); "
+                    appNumberFormat />
+                  <!-- <input type="text" matInput formControlName="totalEnergyUsed"
+                  [value]="formatNumber(getFormGroup(input).get('totalEnergyUsed')?.value)" 
+                  (input)="calculateSiteFitness(i, j); onNumberInput($event, getFormGroup(input), 'totalEnergyUsed');"  /> -->
+                </mat-form-field>
+              </div>
+
+              <div class="col-md-3">
+                <mat-form-field appearance="outline" class="w-100 fitness-input-field">
+                  <mat-label>Site Fitness</mat-label>
+                  <input matInput formControlName="siteFitness" readonly />
+                </mat-form-field>
+              </div>
+
+              <div class="col-md-4">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Comments</mat-label>
+                  <textarea matInput formControlName="comments"></textarea>
+                </mat-form-field>
+              </div>
+
+
+              <div class="col-md-1 text-right">
+                <button mat-icon-button color="warn" type="button" (click)="removeFitnessInput(i, j)"
+                  [disabled]="getFitnessInputs(site).length === 1" matTooltip="Remove this entry">
+                  <mat-icon>remove_circle</mat-icon>
+                </button>
+              </div>
+              <div class="col-md-12 text-right">
+                <button (click)="toggleIndicators(i, j)" class="elegant-toggle-btn" type="button">
+                  <span class="label">{{ showIndicators[i]?.[j] ? 'Hide Indicators' : 'Show Indicators' }}</span>
+                  <mat-icon class="chevron"
+                    [@rotateChevron]="showIndicators[i]?.[j] ? 'expanded' : 'collapsed'">expand_more</mat-icon>
+                </button>
+              </div>
+
+              <div class="" *ngIf="showIndicators[i]?.[j]" [@indicatorExpand]>
+                <!-- <div class="indicator-container">
+                  <div class="indicator-header">
+                    <div class="header-cell span-2">Progress Indicator</div>
+                    <div class="header-cell">Data Completeness</div>
+                    <div class="header-cell span-2">Context Indicator</div>
+                  </div>
+
+                  <ng-container *ngFor="let pi of goal.ProgressIndicators; let i = index">
+                    <div class="indicator-row">
+                    
+                      <div class="data-cell">{{ pi.progress_indicator }}</div>
+                      <div class="data-cell highlight">{{ calculateProgressIndicator(j) }}</div>
+
+                     
+                      <div class="data-cell">{{ dataCompletenessStatus }}</div>
+
+                    
+                      <div class="data-cell">{{ goal.ContextIndicators[i]?.context_indicator || '-' }}</div>
+                      <div class="data-cell">{{ calculateContextIndicator(j) }} {{ goal.ContextIndicators[i]?.unit || ''
+                        }}</div>
+                    </div>
+                  </ng-container>
+
+                  <ng-container *ngFor="let ci of goal.ContextIndicators; let i = index">
+                    <div class="indicator-row" *ngIf="i >= goal.ProgressIndicators.length">
+                      <div class="data-cell"></div>
+                      <div class="data-cell"></div>
+                      <div class="data-cell"></div>
+                      <div class="data-cell">{{ ci.context_indicator || '-' }}</div>
+                      <div class="data-cell">{{ calculateContextIndicator(j) }} {{ ci.unit || '' }}</div>
+                    </div>
+                  </ng-container>
+                </div> -->
+                
+                <div class="indicator-container col-md-6">
+                  <div class="indicator-header">
+                    <div class="header-cell">Progress Indicator</div>
+                    <div class="header-cell">Fitness Score</div>
+                    <div class="header-cell">Data Completeness</div>
+                  </div>
+
+                  <ng-container *ngFor="let pi of goal.ProgressIndicators; let k = index">
+                    <div class="indicator-row">
+                      <!-- Progress Indicator with value -->
+                      <div class="data-cell">
+                        <div class="indicator-name">{{ pi.progress_indicator }}</div>
+                        
+                      </div>
+
+                      <!-- Context Indicator with value and unit -->
+                      <div class="data-cell">
+                        <div class="indicator-value">{{ calculateProgressIndicator(i,j) }}</div>
+                        
+                      </div>
+
+                      <!-- Data Completeness -->
+                      <!-- <div class="data-cell">{{ dataCompletenessStatus }}</div> -->
+                    </div>
+                  </ng-container>
+
+                  
+                </div>
+                <div class="indicator-container col-md-6">
+                  <div class="indicator-header">
+                    <div class="header-cell">Progress Indicator</div>
+                    <div class="header-cell">Fitness Score</div>
+                    <div class="header-cell">Data Completeness</div>
+                  </div>
+                  <ng-container *ngFor="let ci of goal.ContextIndicators; let l = index">
+                    <div class="indicator-row" *ngIf="i >= goal.ProgressIndicators.length">
+                      <!-- <div class="data-cell">-</div> -->
+                      <div class="data-cell">
+                        <div class="indicator-name">{{ ci.context_indicator || '-' }}</div>
+                        <div class="indicator-value">{{ calculateContextIndicator(j) }} {{ ci.unit || '' }}</div>
+                      </div>
+                      <!-- <div class="data-cell">-</div> -->
+                    </div>
+                  </ng-container>
+
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Add Button -->
+
+          </div>
+
+          <!-- <div class="col-md-4">
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Renewable Energy Used</mat-label>
+                <input type="number" matInput   [readonly]="dropdownTouched[i] && site.get('relevance')?.value !== 1" formControlName="renewableEnergyUsed"
+                  (input)="calculateSiteFitness(i)" />
+              </mat-form-field>
+            </div>
+            <div class="col-md-4">
+
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Total Energy Used</mat-label>
+                <input type="number" matInput  [readonly]="dropdownTouched[i] && site.get('relevance')?.value !== 1"  formControlName="totalEnergyUsed"
+                  (input)="calculateSiteFitness(i)" />
+              </mat-form-field>
+            </div>
+            <div class="col-md-4">
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Site Fitness</mat-label>
+                <input matInput formControlName="siteFitness" readonly />
+              </mat-form-field>
+            </div> -->
+          <!-- </div> -->
+          <!-- <div class="row">
+            <div class="col-md-12 label-title">
+              <p class="decorated"><span>Other Information</span></p>
+            </div>
+          </div> -->
+        </mat-expansion-panel>
+
+      </mat-accordion>
+    </div>
+    <div class="next-button-wrapper">
+      <button mat-flat-button color="primary" class="custom-submit-btn" type="button" (click)="submitForm()">
+        <!-- [disabled]="loading || !isAtLeastOneSiteValid()" -->
+
+        <span *ngIf="!loading">Submit</span>
+        <!-- <mat-spinner  diameter="24"></mat-spinner> -->
+        <mat-spinner *ngIf="loading" [diameter]="40" color="accent"></mat-spinner></button>
+    </div>
+  </ng-container>
+
+</div>

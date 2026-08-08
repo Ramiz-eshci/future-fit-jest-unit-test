@@ -1,0 +1,364 @@
+<form [formGroup]="parentForm">
+  <h2>
+    {{ goal.goal_code }} - {{ goal.goal_name }} - ({{goal.goal_short_name}}) 
+    <mat-icon class="info-icon" (click)="openHelpDialog(goal.fitness_criteria, goal.notes)" aria-label="Help">
+      info
+    </mat-icon>
+
+    <button (click)="toggleIndicators()" class="elegant-toggle-btn">
+      <span class="label">{{ showIndicators ? 'Hide Indicators' : 'Show Indicators' }}</span>
+      <mat-icon class="chevron" [@rotateChevron]="showIndicators ? 'expanded' : 'collapsed'">expand_more</mat-icon>
+    </button>
+      <button class="elegant-toggle-btn progress-btn" type="button" (click)="openProgressGraph()">
+            <span class="label">Progress Graph</span>
+        </button>
+  </h2>
+
+  <div class="indicator-grid" *ngIf="showIndicators" [@indicatorExpand]>
+    <div class="grid-header year-header">Year</div>
+    <div class="grid-header progress-header span-2">Progress Indicator</div>
+    <div class="grid-header context-header span-2">Context Indicator</div>
+    <div class="grid-header unit-header">Unit</div>
+    <div class="grid-header completeness-header">Data Completeness</div>
+
+    <ng-container *ngIf="uniqueYearsFromFitnessInputs.length > 0">
+      <ng-container *ngFor="let pi of goal.ProgressIndicators; let i = index; let isFirst = first">
+        <div *ngIf="isFirst" class="grid-item year-cell" [attr.rowspan]="goal.ProgressIndicators.length">
+          {{ uniqueYearsFromFitnessInputs[0] }}
+        </div>
+        <div class="grid-item">{{ pi.progress_indicator }}</div>
+        <div class="grid-item highlight">{{ calculateProgressIndicator(uniqueYearsFromFitnessInputs[0]) }}</div>
+        <div class="grid-item">{{ goal.ContextIndicators[i]?.context_indicator || '-' }}</div>
+        <div class="grid-item highlight">{{ calculateContextIndicator(uniqueYearsFromFitnessInputs[0]) }}</div>
+        <div class="grid-item">{{ goal.ContextIndicators[i]?.unit || '-' }}</div>
+      </ng-container>
+    </ng-container>
+
+    <ng-container *ngFor="let ci of goal.ContextIndicators; let i = index">
+      <div *ngIf="i >= goal.ProgressIndicators.length" class="grid-item">{{ ci.context_indicator || '-' }}</div>
+      <div *ngIf="i >= goal.ProgressIndicators.length" class="grid-item">{{
+        calculateContextIndicator(uniqueYearsFromFitnessInputs[0]) }}</div>
+      <div *ngIf="i >= goal.ProgressIndicators.length" class="grid-item">{{ ci.unit || '-' }}</div>
+      <div class="grid-item highlight">{{ calculateDataCompleteness(uniqueYearsFromFitnessInputs[0]) || '-'}}</div>
+    </ng-container>
+
+    <div class="grid-item full-width-row" *ngIf="uniqueYearsFromFitnessInputs.length > 1"
+      (click)="showRemaining = !showRemaining">
+      <span>View {{ uniqueYearsFromFitnessInputs.length - 1 }} more years</span>
+      <span class="arrow-icon">{{ showRemaining ? '▲' : '▼' }}</span>
+    </div>
+
+    <!-- Remaining Years -->
+    <ng-container *ngIf="showRemaining">
+      <ng-container *ngFor="let year of uniqueYearsFromFitnessInputs.slice(1)">
+        <ng-container *ngFor="let pi of goal.ProgressIndicators; let i = index; let isFirst = first">
+          <div *ngIf="isFirst" class="grid-item year-cell" [attr.rowspan]="goal.ProgressIndicators.length">
+            {{ year }}
+          </div>
+          <div class="grid-item progress-label">{{ pi.progress_indicator }}</div>
+          <div class="grid-item highlight progress-value">{{ calculateProgressIndicator(year) }}</div>
+          <div class="grid-item context-indicator">{{ goal.ContextIndicators[i]?.context_indicator || '-' }}
+          </div>
+          <div class="grid-item highlight context-indicator">{{ calculateContextIndicator(year) }}</div>
+          <div class="grid-item unit-cell">{{ goal.ContextIndicators[i]?.unit || '-' }}</div>
+          <div class="grid-item highlight data-completeness">{{ calculateDataCompleteness(year) || '-'}}</div>
+        </ng-container>
+
+        <!-- Extra ContextIndicators -->
+        <ng-container *ngFor="let ci of goal.ContextIndicators; let i = index">
+          <ng-container *ngIf="i >= goal.ProgressIndicators.length">
+            <div class="grid-item">{{ ci.context_indicator || '-' }}</div>
+            <div class="grid-item highlight">{{ calculateContextIndicator(year) }}</div>
+            <div class="grid-item">{{ ci.unit || '-' }}</div>
+            <div class="grid-item highlight">{{ calculateDataCompleteness(year) }}</div>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+  </div>
+
+
+  <ng-container *ngFor="let site of formArray.controls; let i = index">
+    <div [formArrayName]="arrayName" class="sites-container">
+      <mat-accordion class="sites-accordion" [multi]="false">
+        <mat-expansion-panel class="site-panel" [formGroupName]="i" *ngIf="i === 0">
+          <mat-expansion-panel-header class="site-panel-header">
+            <mat-panel-title class="site-title">COMPANY INFORMATION</mat-panel-title>
+            <mat-panel-description class="site-metadata">
+              <!-- Header Info if needed -->
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+          <mat-panel-description class="site-metadata">
+          </mat-panel-description>
+
+
+          <div class="panel-content">
+            <div formArrayName="fitnessInputs" class="fitness-inputs-container">
+              <div class="fitness-inputs-header">
+                <h3 class="fitness-inputs-title">Progress indicator data</h3>
+                <button class="add-fitness-btn" mat-flat-button color="primary" type="button"
+                  (click)="addFitnessInput(i)">Add progress data</button>
+              </div> 
+              <mat-expansion-panel *ngFor="let input of getFitnessInputs(site).controls; let j = index"
+                [formGroupName]="j" class="row  fitness-input-row">
+                <mat-expansion-panel-header class="site-panel-header fitness-inputs-header">
+                  <div class="site-header">
+                    <div class="site-header-item"> 
+                       <span class="site-title" *ngIf="isValidYearShow(input.get('year')?.value); else selectYear">
+                      {{ input.get('year')?.value | date:'yyyy' }}
+                    </span>
+
+                    <ng-template #selectYear>
+
+                    </ng-template>
+
+                    </div>
+                  </div>
+                </mat-expansion-panel-header>
+                <div class="row fitness-input-row">
+
+                  <div class="col-md-3">
+                    <mat-form-field appearance="outline" class="w-100 fitness-input-field">
+                      <mat-label>Year</mat-label>
+                      <input matInput maxlength="4" type="text" [matDatepicker]="yearPicker" formControlName="year"
+                        readonly (click)="yearPicker.open()"/>
+                      <mat-datepicker-toggle matSuffix [for]="yearPicker"></mat-datepicker-toggle>
+                      <mat-datepicker #yearPicker startView="multi-year"
+                        (yearSelected)="setYear($event, yearPicker ,i, j)" panelClass="year-picker"></mat-datepicker>
+                      <mat-error *ngIf="input.get('year')?.hasError('duplicateYear') && input.get('year')?.touched">
+                        This year is already in site.
+                      </mat-error>
+                      <mat-error *ngIf="input.get('year')?.hasError('required') && input.get('year')?.touched">
+                        Year is required.
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                  <div class="criteria-section">
+                    <h4 class="criteria-header">COMPANY INFORMATION </h4>
+                    <div class="criteria-grid">
+                      <mat-checkbox formControlName="companyis_mnc" class="criteria-item"> Is the company a
+                        multinational
+                        company?</mat-checkbox>
+                      <mat-checkbox formControlName="not_relevant_for_nonprofit" class="criteria-item"> Not relevant for
+                        Non-profit organisations</mat-checkbox>
+                    </div>
+                  </div>
+
+                  <div class="criteria-section">
+                    <h4 class="criteria-header">FITNESS INPUT (Public commitment and adherence to tax policies)</h4>
+                    <div class="criteria-grid">
+                      <mat-checkbox formControlName="public_website" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Does the company have a tax
+                        policy
+                        published either on its web site or referred to in its financial statements? </mat-checkbox>
+                      <mat-checkbox formControlName="public_tax_appointed" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Has the company appointed
+                        a
+                        named director to have responsibility for its tax policy?</mat-checkbox>
+                      <mat-checkbox formControlName="public_tax_strategy" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Does the tax strategy
+                        statement refer to seeking to declare profits in the place and form of their economic substance?
+                        (or equivalent) </mat-checkbox>
+                      <mat-checkbox formControlName="public_tax_marketed" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Does the tax strategy
+                        statement refer to not using marketed or abusive tax avoidance schemes?</mat-checkbox>
+                      <mat-checkbox formControlName="public_tax_no_tax" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Does the tax strategy
+                        statement
+                        refer to not using low or no-tax jurisdictions for the primary purpose of minimizing
+                        taxes?</mat-checkbox>
+                      <mat-checkbox formControlName="public_tax_direct" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Does the tax strategy
+                        statement
+                        refer to direct taxes (such as corporate income tax) as well as indirect taxes (including
+                        payroll
+                        taxes, taxes on distributions, sales or value-added taxes, trade tariffs, etc)? (Multi-national
+                        only)</mat-checkbox>
+                      <mat-checkbox formControlName="public_tax_stated" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Does the company assesses
+                        its
+                        compliance with its stated tax policy, and the results are discussed internally?</mat-checkbox>
+                      <mat-checkbox formControlName="public_tax_independent" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Is external assurance
+                        on
+                        policy compliance is obtained from an independent third party?</mat-checkbox>
+                      <mat-checkbox formControlName="public_tax_discloses" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">The company discloses its
+                        assessment, including appropriate explanations on how the outcome was determined, and future
+                        steps
+                        needed to improve its performance?</mat-checkbox>
+                      <mat-form-field appearance="outline" class="w-100">
+                        <mat-label> Total Score</mat-label>
+                        <input type="text" matInput formControlName="tax_policies_totalescore" readonly />
+                      </mat-form-field>
+                    </div>
+                  </div>
+
+                  <div class="criteria-section">
+                    <h4 class="criteria-header">Transparency</h4>
+                    <div class="criteria-grid">
+                      <mat-checkbox formControlName="transparency_company" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Does the company publish
+                        full
+                        (i.e. non-abbreviated) financial statements even if not required to do so by law?</mat-checkbox>
+                      <mat-checkbox formControlName="transparency_evidence" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Is there clear evidence
+                        of
+                        what the company does either within its accounts or on an easily identifiable website that it
+                        runs?</mat-checkbox>
+                      <mat-checkbox formControlName="transparency_address" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Is a trading address
+                        listed,
+                        or a statement provided confirming thatthey are the same, in the financial statements or an
+                        easily
+                        identifiable website that the company runs?</mat-checkbox>
+                      <mat-checkbox formControlName="transparency_ultimate" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Is it clear who the
+                        ultimate
+                        beneficial owners of all shareholdings of more than 10% in the company are either from a
+                        statement
+                        in
+                        the financial statements or via a publicly available government registry?</mat-checkbox>
+                      <mat-form-field appearance="outline" class="w-100">
+                        <mat-label> Total Score</mat-label>
+                        <input type="text" matInput formControlName="transparency_totalescore" readonly />
+                      </mat-form-field>
+                    </div>
+                  </div>
+                  <div class="criteria-section">
+                    <h4 class="criteria-header">Tax rate and disclosure</h4>
+                    <div class="criteria-grid">
+                      <mat-checkbox formControlName="taxrate_reconciliation" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Does the company
+                        provide a
+                        numerical tax reconciliation of its actual current tax charge to the current tax rate that might
+                        be
+                        expected for the year at the tax rate applying to the profits of the company?</mat-checkbox>
+                      <mat-checkbox formControlName="taxrate_current" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Does the company then
+                        reconcile
+                        its current tax charge with its total tax charge for the year by offering a reconciliation that
+                        explains the deferred tax provision for the year and other items that make up the
+                        difference?</mat-checkbox>
+                      <mat-checkbox formControlName="taxrate_narrative" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Does the company provide a
+                        narrative explanation as to why its current tax charge differs from the charge expected for the
+                        year
+                        at the tax rate applying to the profits of the company in its main place of
+                        residence?</mat-checkbox>
+                      <mat-checkbox formControlName="taxrate_deferred" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Does the company provide a
+                        deferred tax note that explains the balance of those assets or liabilities with significant
+                        precision
+                        so that the cause of at least 75% of the asset or liability is clearly described, and when they
+                        are
+                        likely to be used?</mat-checkbox>
+                      <mat-form-field appearance="outline" class="w-100">
+                        <mat-label> Total Score</mat-label>
+                        <input type="text" matInput formControlName="taxrate_totalescore" readonly />
+                      </mat-form-field>
+                    </div>
+                  </div>
+                  <div class="criteria-section">
+                    <h4 class="criteria-header">CONTEXT DATA INPUT (Country-by-country reporting
+                      (Multi-national companies only))</h4>
+                    <div class="criteria-grid">
+                      <mat-checkbox formControlName="country_by_disclose" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Does the company disclose
+                        a
+                        full list of subsidiary companies stating their name and place of incorporation?</mat-checkbox>
+                      <mat-checkbox formControlName="country_by_residence" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Is the country of tax
+                        residence of each subsidiary disclosed, if different from place of incorporation?</mat-checkbox>
+                      <mat-checkbox formControlName="country_by_net_asset_value" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Does the company
+                        either
+                        disclose data on the net asset value or equity invested in each subsidiary, or as a consolidated
+                        total
+                        for each country in which it operates?</mat-checkbox>
+                      <mat-checkbox formControlName="country_by_net_period_provided" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Is the data on
+                        total revenues for the period provided for each of its subsidiaries, or as a consolidated total
+                        for
+                        each country in which it operates?</mat-checkbox>
+                      <mat-checkbox formControlName="country_by_income" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Is data on either the net
+                        income
+                        or loss for the period provided for each of its subsidiaries or as a consolidated total for each
+                        country in which it operates?</mat-checkbox>
+                      <mat-checkbox formControlName="country_by_current_tax_charge" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Does the company
+                        either disclose the current tax charge made by each subsidiary for each trading period or as a
+                        consolidated total for each country in which it operates?</mat-checkbox>
+                      <mat-checkbox formControlName="country_by_average_number" (change)="calculateSiteFitness(0)"
+                        class="criteria-item">Does the company
+                        disclose the average number of employees each subsidiary engages together with a note on the
+                        basis
+                        of
+                        calculation used, or as a consolidated total for each country in which it
+                        operates?</mat-checkbox>
+                      <mat-form-field appearance="outline" class="w-100">
+                        <mat-label> Total Score</mat-label>
+                        <input type="text" matInput formControlName="country_by_total_context_score" readonly />
+                      </mat-form-field>
+                    </div>
+                  </div> 
+                  <div class="col-md-12">
+                    <mat-form-field appearance="outline" class="w-100 comments-field">
+                      <mat-label>Comments</mat-label>
+                      <textarea matInput formControlName="comments" rows="4"></textarea>
+                    </mat-form-field>
+                  </div>
+                  <div class="col-md-1 text-right">
+                    <button mat-icon-button color="warn" type="button" (click)="removeFitnessInput(i, j)"
+                      [disabled]="getFitnessInputs(site).length === 1" matTooltip="Remove this entry">
+                      <mat-icon>remove_circle</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              </mat-expansion-panel>
+            </div>
+          </div>
+
+        </mat-expansion-panel>
+      </mat-accordion>
+    </div>
+
+  </ng-container>
+  <div class="next-button-wrapper">
+    <button mat-flat-button color="primary" class="custom-submit-btn" type="button" (click)="onSubmit()"
+      [disabled]="loading || !parentForm.valid">
+      <span *ngIf="!loading">Submit</span> 
+      <mat-spinner *ngIf="loading" [diameter]="40" color="accent"></mat-spinner></button>
+  </div>
+</form>
+
+
+ <ng-template #progressGraphDialog>
+
+    <div class="dialog-header">
+
+      <h2 mat-dialog-title>
+        Annual Progress Trajectory
+      </h2>
+
+      <button mat-icon-button mat-dialog-close class="close-btn">
+        <mat-icon>close</mat-icon>
+      </button>
+
+    </div>
+
+    <mat-dialog-content>
+
+      <div class="graph-container">
+        <div class="left-graph" *ngIf="chartOptions">
+          <div class="context-unit" *ngIf="contextUnit">
+            {{ contextUnit }}
+          </div>
+          <apx-chart [series]="chartOptions.series" [chart]="chartOptions.chart" [xaxis]="chartOptions.xaxis"
+            [yaxis]="chartOptions.yaxis" [stroke]="chartOptions.stroke" [plotOptions]="chartOptions.plotOptions">
+          </apx-chart>
+        </div>
+      </div>
+    </mat-dialog-content>
+  </ng-template> 

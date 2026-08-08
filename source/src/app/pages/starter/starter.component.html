@@ -1,0 +1,417 @@
+<section id="dashboard" class="admin" *ngIf="RoleID == 1">
+  <div class="dashboard-block">
+    <div class="pagetitle">
+      <h1>Admin Dashboard</h1>
+
+    </div>
+    <div class="cards-sections">
+
+      <div class="row">
+        <div class="col-md-3">
+          <div class="cards bg">
+            <img class="rightio" src="../../../assets/images/rightio.png" />
+            <p>Total Companies</p>
+            <h4>{{totalCompanies}}</h4>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="cards shad">
+            <p>Total Sites</p>
+            <h4>{{totalSites}}</h4>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="cards shad blue">
+            <p>Total Employee</p>
+            <h4>{{totalEmployees}}</h4>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="cards shad green">
+            <p>Total Products</p>
+            <h4>{{totalProducts}}</h4>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+<section id="dashboard" class="company" *ngIf="RoleID == 2 || RoleID == 3">
+
+  <h1>Company Fitness Summary Report</h1>
+  <div class="top-buttons">
+    <!-- Year Picker -->
+    <mat-form-field appearance="outline" class="year-picker-field">
+      <mat-label>Select Year</mat-label>
+      <input matInput [matDatepicker]="yearPicker" [(ngModel)]="selectedYear" readonly />
+      <mat-datepicker-toggle matSuffix [for]="yearPicker"></mat-datepicker-toggle>
+      <mat-datepicker #yearPicker startView="multi-year" (yearSelected)="onYearSelected($event, yearPicker)"
+        panelClass="year-picker">
+      </mat-datepicker>
+    </mat-form-field>
+
+    <!-- Buttons -->
+    <button *ngIf="Sites?.length > 0" class="postion" (click)="activeGroup = 'site'"
+      [class.active]="activeGroup === 'site'">
+      Site
+    </button>
+    <button *ngIf="BE04Report && be04ChartOptions" class="postion" (click)="activeGroup = 'supplychain'"
+      [class.active]="activeGroup === 'supplychain'">
+      Supply Chain
+    </button>
+    <button *ngIf="employees?.length > 0" class="postion1" (click)="activeGroup = 'employee'"
+      [class.active]="activeGroup === 'employee'">
+      Employee
+    </button>
+    <button *ngIf="products?.length > 0" class="postion2" (click)="activeGroup = 'product'"
+      [class.active]="activeGroup === 'product'">
+      Product
+    </button>
+    <button *ngIf="goverance?.length > 0" class="postion2" (click)="activeGroup = 'goverance'"
+      [class.active]="activeGroup === 'goverance'">
+      Goverance
+    </button>
+  </div>
+
+  <mat-sidenav-container class="main-container" id="dashboard">
+
+    <div class="grid" *ngIf="activeGroup === 'site'">
+      <div #cardElement class="card" *ngFor="let site of Sites; let i = index">
+        <div class="h3-tooltip-wrapper">
+          <div class="card-header">
+
+            <!-- <h3>
+              {{site.goal_code}} – {{ site.goal_short_name }}
+            </h3> -->
+            <!-- <h3 [class.clickable-title]="site.goal_code == 'BE01'"
+              (click)="site.goal_code === 'BE01' && openSiteChart(site.goal_code)">
+
+              {{site.goal_code}} – {{ site.goal_short_name }}
+
+            </h3> -->
+            <h3 [class.clickable-title]="['BE01', 'BE02','BE03','BE05', 'BE06','BE07','BE09', 'BE08'].includes(site.goal_code)  "
+              (click)="['BE01','BE02','BE03', 'BE05', 'BE06','BE07', 'BE09', 'BE08'].includes(site.goal_code)  && openSiteChart(site.goal_code) ">
+              {{ site.goal_code }} – {{ site.goal_short_name }}
+            </h3>
+
+
+          </div>
+          <div *ngIf="hoverIndex == i" class="hover-text">
+            {{ hoverText }}
+          </div>
+        </div>
+        <div *ngIf="site.progress_indicators?.length > 0; else noProgress">
+          <div class="progress-container"
+            (mouseenter)="hoverIndex = i;   hoverText = site.progress_indicators[j].progress_indicator"
+            (mousemove)="hoverIndex = i" (mouseleave)="hoverIndex = -1; hoverText = ''"
+            *ngFor="let single_pgr of site.progress_indicators; let j = index">
+            <div class="progress-bar orange " [style.width.%]="single_pgr.score">
+              {{single_pgr.score}}%
+            </div>
+          </div>
+        </div>
+        <ng-template #noProgress>
+          <p class="meta">No progress data</p>
+        </ng-template>
+      </div>
+    </div>
+    <div class="" *ngIf="activeGroup === 'supplychain'">
+      <div class="chart-card" *ngIf="BE04Report && be04ChartOptions">
+        <div class="chart-body">
+          <div class="chart-loader" *ngIf="isChartLoading">
+            <mat-progress-spinner diameter="50" color="primary" mode="indeterminate">
+            </mat-progress-spinner>
+          </div>
+          <div *ngIf="!isChartLoading">
+            <apx-chart *ngIf="be04ChartOptions" [series]="be04ChartOptions.series" [chart]="be04ChartOptions.chart"
+              [xaxis]="be04ChartOptions.xaxis" [plotOptions]="be04ChartOptions.plotOptions"
+              [dataLabels]="be04ChartOptions.dataLabels" [colors]="be04ChartOptions.colors"
+              [title]="be04ChartOptions.title">
+            </apx-chart>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <div class="grid" *ngIf="activeGroup === 'employee'">
+
+      <div #cardElement class="card card-relative" *ngFor="let emp of employees; let i = index">
+
+        <div class="h3-tooltip-wrapper">
+          <!-- <h3>{{emp.goal_code}} – {{ emp.goal_short_name }}</h3> -->
+          <div class="card-header">
+            <h3 [class.clickable-title]="['BE10','BE11',  'BE12','BE13', 'BE14'].includes(emp.goal_code)  "
+              (click)="['BE10','BE11','BE12','BE13', 'BE14'].includes(emp.goal_code)  && openEmployeeChart(emp.goal_code) ">
+              {{ emp.goal_code }} – {{ emp.goal_short_name }}
+            </h3>
+          </div>
+          <div *ngIf="hoverIndex == i" class="hover-text">
+            {{ hoverText }}
+          </div>
+        </div>
+
+        <div *ngIf="emp.progress_indicators?.length > 0; else noProgress">
+
+          <div class="progress-container" *ngFor="let single_pgr of emp.progress_indicators; let j = index"
+            (mouseenter)="hoverIndex = i; hoverText = emp.progress_indicators[j].progress_indicator"
+            (mousemove)="hoverIndex = i" (mouseleave)="hoverIndex = -1; hoverText = ''">
+
+            <div class="progress-bar orange" [style.width.%]="single_pgr.score">
+              {{single_pgr.score}}%
+            </div>
+
+          </div>
+
+        </div>
+
+        <ng-template #noProgress>
+          <p class="meta">No progress data</p>
+        </ng-template>
+
+      </div>
+    </div>
+
+    <div class="grid" *ngIf="activeGroup === 'product'">
+      <div #cardElement class="card" *ngFor="let prd of products; let i = index">
+
+        <div class="h3-tooltip-wrapper">
+          <!-- <h3>{{prd.goal_code}} – {{ prd.goal_short_name }}</h3> -->
+           <div class="card-header">
+            <h3 [class.clickable-title]="['BE15',  'BE16', 'BE17','BE18','BE19'].includes(prd.goal_code)  "
+              (click)="['BE15','BE16','BE17','BE18','BE19'].includes(prd.goal_code)  && openProductChart(prd.goal_code) ">
+              {{ prd.goal_code }} – {{ prd.goal_short_name }}
+            </h3>
+          </div>
+          <div *ngIf="hoverIndex === i" class="hover-text">
+            {{ hoverText }}
+          </div>
+        </div>
+
+        <div *ngIf="prd.progress_indicators?.length > 0; else noProgress">
+
+          <div class="progress-container" *ngFor="let single_pgr of prd.progress_indicators; let j = index"
+            (mouseenter)="hoverIndex = i; hoverText = prd.progress_indicators[j].progress_indicator"
+            (mousemove)="hoverIndex = i" (mouseleave)="hoverIndex = -1; hoverText = ''">
+
+            <div class="progress-bar orange" [style.width.%]="single_pgr.score">
+              {{single_pgr.score}}%
+            </div>
+
+          </div>
+
+        </div>
+
+        <ng-template #noProgress>
+          <p class="meta">No progress data</p>
+        </ng-template>
+
+      </div>
+    </div>
+    <div class="grid" *ngIf="activeGroup === 'goverance'">
+      <div #cardElement class="card" *ngFor="let gov of goverance; let i = index">
+
+        <div class="h3-tooltip-wrapper">
+          <!-- <div class="card-header">
+            <h3 [class.clickable-title]="['BE20','BE21','BE22'].includes(gov.goal_code)"
+              (click)="['BE20','BE21','BE22'].includes(gov.goal_code)  && openEmployeeChart(gov.goal_code) ">
+              {{ gov.goal_code }} – {{ gov.goal_short_name }} 
+            </h3>
+          </div> -->
+          <div class="card-header">
+            <h3 [class.clickable-title]="['BE20','BE21','BE22'].includes(gov.goal_code)" (click)="
+      gov.goal_code == 'BE20'
+        ? openEmployeeChart(gov.goal_code)
+        : ['BE21','BE22'].includes(gov.goal_code)
+          ? openSiteChart(gov.goal_code)
+          : null
+    ">
+              {{ gov.goal_code }} – {{ gov.goal_short_name }}
+            </h3>
+          </div>
+
+          <div *ngIf="hoverIndex === i" class="hover-text">
+            {{ hoverText }}
+          </div>
+        </div>
+
+        <div *ngIf="gov.progress_indicators?.length > 0; else noProgress">
+
+          <div class="progress-container" *ngFor="let single_pgr of gov.progress_indicators; let j = index"
+            (mouseenter)="hoverIndex = i; hoverText = gov.progress_indicators[j].progress_indicator"
+            (mousemove)="hoverIndex = i" (mouseleave)="hoverIndex = -1; hoverText = ''">
+
+            <div class="progress-bar orange" [style.width.%]="single_pgr.score">
+              {{single_pgr.score}}%
+            </div>
+
+          </div>
+
+        </div>
+
+        <ng-template #noProgress>
+          <p class="meta">No progress data</p>
+        </ng-template>
+
+      </div>
+    </div>
+
+    <div class="chart-card" *ngIf="BE23Report && be23ChartOptions && activeGroup === 'goverance'">
+      <div class="chart-body">
+        <div class="chart-loader" *ngIf="isChartLoading">
+          <mat-progress-spinner diameter="50" color="accent" mode="indeterminate"></mat-progress-spinner>
+        </div>
+
+        <div *ngIf="!isChartLoading">
+          <apx-chart *ngIf="be23ChartOptions" [series]="be23ChartOptions.series" [chart]="be23ChartOptions.chart"
+            [xaxis]="be23ChartOptions.xaxis" [plotOptions]="be23ChartOptions.plotOptions"
+            [dataLabels]="be23ChartOptions.dataLabels" [colors]="be23ChartOptions.colors"
+            [title]="be23ChartOptions.title">
+          </apx-chart>
+        </div>
+      </div>
+    </div>
+
+    <div class="pagetitle">
+
+      <button mat-raised-button color="primary" class="pull-left custombtn" style="margin-left: 25px;"
+        (click)="openDrawer()">Add Report</button>
+    </div>
+
+    <mat-sidenav #drawer mode="over" position="end" [autoFocus]="false" class="drawer large-drawer"
+      (opened)="onOpened()">
+      <h3>Select Chart Type</h3>
+      <mat-button-toggle-group [(ngModel)]="selectedChart" class="chart-toggle-group">
+        <mat-button-toggle *ngFor="let chart of chartTypes" [value]="chart.type">
+          <mat-icon>{{ chart.icon }}</mat-icon>
+        </mat-button-toggle>
+      </mat-button-toggle-group>
+
+      <h3 class="section-title">Select Metrics</h3>
+      <mat-button-toggle-group [(ngModel)]="selectedDataType" class="chart-toggle-group" [style.display]="'flex'"
+        [style.flexDirection]="'column'" [style.alignItems]="'flex-start'">
+        <mat-button-toggle *ngFor="let dt of dataTypes" [value]="dt.type">
+          <mat-icon>category</mat-icon>
+          {{ dt.label }}
+        </mat-button-toggle>
+      </mat-button-toggle-group>
+
+      <!-- Conditional value selection -->
+      <ng-container [ngSwitch]="selectedDataType">
+        <!-- RISK OWNER -->
+        <ng-container *ngSwitchCase="'be_filled'">
+          <h3 class="section-title">Select Site, Employee or product</h3>
+          <mat-button-toggle-group [(ngModel)]="selectedDataObject" class="chart-toggle-group" [style.display]="'flex'"
+            [style.flexDirection]="'column'" [style.alignItems]="'flex-start'">
+            <mat-button-toggle *ngFor="let o of sep" [value]="o">
+              {{ o.name }}
+            </mat-button-toggle>
+          </mat-button-toggle-group>
+        </ng-container>
+
+        <!-- RISK DESCRIPTOR -->
+        <ng-container *ngSwitchCase="'abc'">
+          <h3 class="section-title">Select Descriptor</h3>
+          <mat-button-toggle-group [(ngModel)]="selectedDataObject" class="chart-toggle-group">
+            <mat-button-toggle *ngFor="let d of descriptors" [value]="d">
+              {{ d.name }}
+            </mat-button-toggle>
+          </mat-button-toggle-group>
+        </ng-container>
+
+        <!-- BRA STATUS (no further selection needed) -->
+        <ng-container *ngSwitchCase="'bra_status'">
+          <p class="info-text">
+            You selected BRA Status. Chart will display all statuses:
+            Draft, Submitted, Approved.
+          </p>
+        </ng-container>
+        <ng-container *ngSwitchCase="'gross_total'">
+          <p class="info-text">
+            You selected Gross Total. Chart will display with gross total of
+            lastest BRA for all risk owners.
+          </p>
+        </ng-container>
+        <ng-container *ngSwitchCase="'user_forms'">
+          <p class="info-text">
+            You selected User Forms. Chart will display with User BE Forms
+            filled score for Users.
+          </p>
+        </ng-container>
+        <ng-container *ngSwitchCase="'be_filled'">
+          <p class="info-text">
+            You selected Be Filled Score. Chart will display with total BE
+            filled score of
+            for all BE forms.
+          </p>
+        </ng-container>
+        <ng-container *ngSwitchCase="'effectiveness_residual'">
+          <p class="info-text">
+            You selected Effectiveness Residual Score. Chart will display with
+            effectiveness residual score of
+            lastest BRA for all risk owners.
+          </p>
+        </ng-container>
+      </ng-container>
+
+      <button mat-stroked-button color="primary" class="add-chart-btn" (click)="addChart(selectedChart!, drawer)"
+        [disabled]="
+  !selectedChart ||
+  !selectedDataType ||
+  (requiresSelection(selectedDataType) && !selectedDataObject)
+">
+        Add Chart
+      </button>
+      <button mat-stroked-button color="primary" class="add-chart-btn" (click)="closeSidebar(drawer)">
+        Close
+      </button>
+    </mat-sidenav>
+
+    <div class="content">
+
+      <div class="chart-grid row">
+        <div class="chart-card col-md-6" *ngFor="let chart of chartList; let i = index" cdkDrag>
+          <mat-card>
+            <mat-card-header class="mat-mdc-card-header-dash">
+              <mat-card-title>
+                {{ chart.filterLabel }} Report
+              </mat-card-title>
+              <mat-card-actions class="custom-card-actions" align="end">
+                <button mat-icon-button (click)="toggleCollapse(i)">
+                  <mat-icon>{{ chart.collapsed ? 'expand_more' :
+                    'expand_less' }}</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="deleteChart(i)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </mat-card-actions>
+            </mat-card-header>
+            <mat-card-content *ngIf="!chart.collapsed">
+              <app-chart-card [chartType]="chart.type" [dataType]="chart.dataType" [filterValue]="chart.filterValue">
+              </app-chart-card>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    </div>
+  </mat-sidenav-container>
+</section>
+<ng-template #chartDialog>
+  <div class="dialog-header">
+    <h2 mat-dialog-title>
+      {{ chartTitle }}
+    </h2>
+    <button mat-icon-button mat-dialog-close class="close-btn">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  <mat-dialog-content>
+    <div class="context-unit">
+      {{ contextUnit }}
+    </div>
+    <apx-chart *ngIf="chartOptions" [series]="chartOptions.series" [chart]="chartOptions.chart"
+      [xaxis]="chartOptions.xaxis" [yaxis]="chartOptions.yaxis" [stroke]="chartOptions.stroke"
+      [colors]="chartOptions.colors" [tooltip]="chartOptions.tooltip">
+    </apx-chart>
+  </mat-dialog-content>
+</ng-template>

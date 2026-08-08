@@ -1,0 +1,81 @@
+<mat-card class="cardWithShadow theme-card">
+  <mat-card-header>
+    <mat-card-title class="m-b-0">Business Inputs</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content class="b-t-1">
+    <div class="container-fluid page">
+
+  <!-- <div class="header mb-3">
+    <h2>Business Inputs</h2>
+    <p>
+      Every company relies upon business inputs—goods, services and materials
+      provided by suppliers.
+    </p>
+  </div> -->
+
+  <!-- TABLE HEADER -->
+  <div class="row fw-semibold table-head align-items-end">
+  <div class="col-md-6">Characteristic</div>
+  <div class="col-md-3 text-start">Risk of impact</div>
+  <!-- <div class="col-md-2 text-start">Business activity?</div> -->
+  <div class="col-md-3 text-start">Company?</div>
+</div>
+
+  <!-- ROWS -->
+  <div
+    class="row align-items-center py-2 border-bottom"
+    *ngFor="let q of questions">
+
+    <!-- Characteristic -->
+    <div class="col-md-6 characteristic">
+      {{ q.id }}. {{ q.text }}
+    </div>
+
+    <!-- Risk -->
+    <div class="col-md-3 risk" [ngClass]="q.risk.toLowerCase()">
+      {{ q.risk }}
+      <span *ngIf="q.risk === 'High'">⬆</span>
+      <span *ngIf="q.risk === 'Low'">⬇</span>
+    </div>
+
+    <!-- Business Activity -->
+    <!-- <div class="col-md-3">
+      <div class="buttons">
+        <button
+          [class.active]="q.activityAnswer === 'Yes'"
+          (click)="selectActivity(q,'Yes')">Yes</button>
+
+        <button
+          [class.active]="q.activityAnswer === 'No'"
+          (click)="selectActivity(q,'No')">No</button>
+
+        <button
+          [class.active]="q.activityAnswer === 'NA'"
+          (click)="selectActivity(q,'NA')">NA</button>
+      </div>
+    </div> -->
+
+    <!-- Company -->
+    <div class="col-md-3">
+      <div class="buttons company-buttons">
+        <button
+          [class.active]="q.companyAnswer === 'Yes'"
+          (click)="selectCompany(q,'Yes')">Yes</button>
+
+        <button
+          [class.active]="q.companyAnswer === 'No'"
+          (click)="selectCompany(q,'No')">No</button>
+
+        <button
+          [class.active]="q.companyAnswer === 'Not answered'"
+          (click)="selectCompany(q,'Not answered')">
+          Not answered
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+  </mat-card-content>
+</mat-card>

@@ -1,0 +1,25 @@
+.text-danger {
+  color: #f44336; /* Material red */
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+
+  .file-upload-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .file-name {
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .error-text {
+    color: red;
+    font-size: 14px;
+  }
+.pull-left{
+  margin-left: auto;
+}  

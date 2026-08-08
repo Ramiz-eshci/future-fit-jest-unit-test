@@ -1,0 +1,197 @@
+<mat-card class="cardWithShadow theme-card">
+    <mat-card-header>
+        <mat-card-title class="m-b-0"> {{title}}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="b-t-1">
+        <form [formGroup]="siteForm" (ngSubmit)="onSubmit()" autocomplete="off">
+            <mat-sidenav-container class="sidenav-container">
+                <mat-sidenav mode="side" opened class="sidenav">
+                    <mat-nav-list>
+                        <a mat-list-item *ngFor="let item of sidebarItems"
+                            class="mat-list-item"
+                            [class.active]="item === selected"
+                            (click)="selectItem(item)">
+                            {{ item }}
+                        </a>
+                    </mat-nav-list>
+                </mat-sidenav>
+
+                <!-- <mat-sidenav-content class="main-content">
+                    <ng-container [ngSwitch]="selected">
+                        <ng-container *ngSwitchCase="'BE01'">
+                            <h2>{{ selected }}</h2> 
+                            <div class="header">
+                                <div class="indicator-grid">
+                                    <div class="grid-header">Progress Indicator</div>
+                                    <div class="grid-header">Data Completeness</div>
+                                    <div class="grid-header">Context Indicator</div>
+                                    <div class="grid-header">Unit</div>
+        
+                                    <div class="grid-item">Energy</div>
+                                    <div class="grid-item">10%</div>
+                                    <div class="grid-item highlight">Calculation based
+                                        on complete data</div>
+                                    <div class="grid-item">Total energy consumed</div>
+                                    <div class="grid-item">2000000</div>
+                                    <div class="grid-item highlight">(E.G. kWh)</div>
+                                </div>
+                            </div>
+                            <form class="" [formGroup]="siteForm">
+                                <mat-accordion>
+                                    <mat-expansion-panel expanded>
+                                        <mat-expansion-panel-header>
+                                            <mat-panel-title>Details 1</mat-panel-title>
+                                        </mat-expansion-panel-header>
+        
+                                        <div class="details-section">
+                                            <div class="section-title">Site Information</div>
+                                            <div class="site-form row">
+                                                <div class="col-md-4">
+                                                    <mat-form-field appearance="outline">
+                                                        <mat-label>Site Name</mat-label>
+                                                        <input matInput />
+                                                    </mat-form-field>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <mat-form-field appearance="outline">
+                                                        <mat-label>Site ID</mat-label>
+                                                        <input matInput />
+                                                    </mat-form-field>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <mat-form-field appearance="outline">
+                                                        <mat-label>Location</mat-label>
+                                                        <input matInput />
+                                                    </mat-form-field>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </mat-expansion-panel>
+                                </mat-accordion>
+                            </form>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'BE02'">
+                            <div class="header">
+                                <h2>{{ selected }}</h2>
+                                <div class="indicator-grid">
+                                    <div class="grid-header">Progress Indicator 2</div>
+                                    <div class="grid-header">Data Completeness 2</div>
+                                    <div class="grid-header">Context Indicator</div>
+                                    <div class="grid-header">Unit</div>
+        
+                                    <div class="grid-item">Energy</div>
+                                    <div class="grid-item">10%</div>
+                                    <div class="grid-item highlight">Calculation based
+                                        on complete data</div>
+                                    <div class="grid-item">Total energy consumed</div>
+                                    <div class="grid-item">2000000</div>
+                                    <div class="grid-item highlight">(E.G. kWh)</div>
+                                </div>
+                            </div>
+                            <form class="" [formGroup]="siteForm">
+                                <mat-accordion>
+                                    <mat-expansion-panel expanded>
+                                        <mat-expansion-panel-header>
+                                            <mat-panel-title>Details 1</mat-panel-title>
+                                        </mat-expansion-panel-header>
+        
+                                        <div class="details-section">
+                                            <div class="section-title">Site Information</div>
+                                            <div class="site-form row">
+                                                <div class="col-md-4">
+                                                    <mat-form-field appearance="outline">
+                                                        <mat-label>Site Name</mat-label>
+                                                        <input matInput />
+                                                    </mat-form-field>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <mat-form-field appearance="outline">
+                                                        <mat-label>Site ID</mat-label>
+                                                        <input matInput />
+                                                    </mat-form-field>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <mat-form-field appearance="outline">
+                                                        <mat-label>Location</mat-label>
+                                                        <input matInput />
+                                                    </mat-form-field>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </mat-expansion-panel>
+                                </mat-accordion>
+                            </form>
+                        </ng-container>
+                    </ng-container>
+                   
+                </mat-sidenav-content> -->
+
+                <mat-sidenav-content class="main-content">
+                    <ng-container *ngIf="getSelectedGoal() as goal">
+
+                      <ng-container [ngSwitch]="selected">
+                        
+                         <!-- <app-be01-form *ngSwitchCase="'BE01'" [parentForm]="be01Form" [arrayName]="'sites'" [goal]="getSelectedGoal()" ></app-be01-form> -->
+                        <app-be01-form *ngSwitchCase="'BE01'" [parentForm]="be01Form" [arrayName]="'sites'" [goal]="getSelectedGoal()" ></app-be01-form>
+                       <app-be02-form *ngSwitchCase="'BE02'" [parentForm]="be02Form" [arrayName]="'sites'" [goal]="getSelectedGoal()" [fitEntryId]="fitEntryId" > </app-be02-form> 
+
+                       <app-be03-form *ngSwitchCase="'BE03'" [parentForm]="be03Form"  [arrayName]="'sites'" [goal]="getSelectedGoal()" [fitEntryId]="fitEntryId" ></app-be03-form>
+                       <app-be05-form *ngSwitchCase="'BE05'" [parentForm]="be05Form" [arrayName]="'sites'" [goal]="getSelectedGoal()" [fitEntryId]="fitEntryId" > </app-be05-form> 
+                       <app-be06-form *ngSwitchCase="'BE06'" [parentForm]="be06Form" [arrayName]="'sites'" [goal]="getSelectedGoal()" [fitEntryId]="fitEntryId" > </app-be06-form>
+
+                      
+                       <app-be07-form *ngSwitchCase="'BE07'" [parentForm]="be07Form" [arrayName]="'sites'" [goal]="getSelectedGoal()" [fitEntryId]="fitEntryId" > </app-be07-form>  
+                       <app-be08-form *ngSwitchCase="'BE08'" [parentForm]="be08Form" [arrayName]="'sites'" [goal]="getSelectedGoal()" [fitEntryId]="fitEntryId" > </app-be08-form>
+                       <app-be09-form *ngSwitchCase="'BE09'" [parentForm]="be09Form" [arrayName]="'sites'" [goal]="getSelectedGoal()" [fitEntryId]="fitEntryId" > </app-be09-form> 
+                              
+                       <app-be10-form  *ngSwitchCase="'BE10'" [parentForm]="be10Form" [arrayName]="'employee'" [goal]="getSelectedGoal()" [fitEntryId]="fitEntryId" > </app-be10-form>
+                       <app-be11-form *ngSwitchCase="'BE11'" [parentForm]="be11Form" [arrayName]="'employee'" [goal]="getSelectedGoal()"[fitEntryId]="fitEntryId" > </app-be11-form>
+                       <app-be12-form *ngSwitchCase="'BE12'" [parentForm]="be12Form" [arrayName]="'employee'" [goal]="getSelectedGoal()"[fitEntryId]="fitEntryId" > </app-be12-form> 
+                       <app-be13-form *ngSwitchCase="'BE13'" [parentForm]="be13Form" [arrayName]="'employee'" [goal]="getSelectedGoal()"[fitEntryId]="fitEntryId" > </app-be13-form> 
+                       <app-be14-form *ngSwitchCase="'BE14'" [parentForm]="be14Form" [arrayName]="'employee'" [goal]="getSelectedGoal()"[fitEntryId]="fitEntryId" > </app-be14-form> 
+                       <app-be15-form *ngSwitchCase="'BE15'" [parentForm]="be15Form" [arrayName]="'products'" [goal]="getSelectedGoal()"[fitEntryId]="fitEntryId" > </app-be15-form> 
+
+                       <!-- <app-be16-form *ngSwitchCase="'BE16'" [parentForm]="be16Form" [arrayName]="'sites'" [goal]="getSelectedGoal()"> </app-be16-form>  -->
+                       
+                       <app-be17-form *ngSwitchCase="'BE17'" [parentForm]="be17Form" [arrayName]="'products'" [goal]="getSelectedGoal()"[fitEntryId]="fitEntryId" > </app-be17-form>  
+                       <app-be18-form *ngSwitchCase="'BE18'" [parentForm]="be18Form" [arrayName]="'products'" [goal]="getSelectedGoal()"[fitEntryId]="fitEntryId" > </app-be18-form>  
+                               
+                       <app-be16-form *ngSwitchCase="'BE16'" [parentForm]="be16Form" [arrayName]="'products'" [goal]="getSelectedGoal()"[fitEntryId]="fitEntryId" > </app-be16-form> 
+                       <app-be19-form *ngSwitchCase="'BE19'" [parentForm]="be19Form" [arrayName]="'products'" [goal]="getSelectedGoal()"[fitEntryId]="fitEntryId" > </app-be19-form> 
+                       <app-be20-form *ngSwitchCase="'BE20'" [parentForm]="be20Form" [arrayName]="'employee'" [goal]="getSelectedGoal()"[fitEntryId]="fitEntryId" > </app-be20-form> 
+                       <app-be21-form *ngSwitchCase="'BE21'" [parentForm]="be21Form" [arrayName]="'sites'" [goal]="getSelectedGoal()"[fitEntryId]="fitEntryId" > </app-be21-form> 
+                       <app-be22-form *ngSwitchCase="'BE22'" [parentForm]="be22Form" [arrayName]="'sites'" [goal]="getSelectedGoal()"[fitEntryId]="fitEntryId" > </app-be22-form> 
+                              
+                       <!-- <app-be06-form *ngSwitchCase="'BE06'" [parentForm]="be06Form" [arrayName]="'sites'" [goal]="getSelectedGoal()"> </app-be06-form>   -->
+                       
+                          
+                       
+
+                      </ng-container>
+                      <!-- <h2>{{ goal.goal_code }} - {{ goal.goal_name }}</h2>
+                      <p><strong>Fitness Criteria:</strong> {{ goal.fitness_criteria }}</p>
+                      <p><strong>Notes:</strong> {{ goal.notes }}</p> -->
+
+                    
+                    </ng-container>
+                  </mat-sidenav-content>
+            </mat-sidenav-container>
+
+            <div class="m-t-12">
+                <!-- <button mat-flat-button color="primary" class="m-r-8">Submit</button> -->
+                <button type="submit" mat-flat-button color="primary"
+                    value="Submit" class="m-r-8"
+                    [disabled]="loading || !siteForm.valid">
+                    <span *ngIf="!loading">Submit</span> 
+                    <!-- <mat-spinner  diameter="24"></mat-spinner> -->
+                    <mat-spinner *ngIf="loading" [diameter]="40"
+                        color="accent"></mat-spinner>
+                </button>
+                <a [routerLink]="['/company']" #tooltip="matTooltip"
+                    matTooltip="Back to {{title}} List"
+                    matTooltipPosition="above" mat-stroked-button
+                    color="warn">Cancel</a>
+            </div>
+        </form>
+    </mat-card-content>
+</mat-card>

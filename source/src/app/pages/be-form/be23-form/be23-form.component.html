@@ -1,0 +1,479 @@
+<form [formGroup]="parentForm">
+    <h2>
+        {{ goal.goal_code }} - {{ goal.goal_name }} - <span *ngIf="selectedCategory"> ({{ selectedCategory.name
+            }})</span>
+
+        <mat-icon class="info-icon" (click)="openHelpDialog(goal.fitness_criteria, goal.notes)" aria-label="Help">
+            info
+        </mat-icon>
+        <button (click)="toggleIndicators()" class="elegant-toggle-btn" type="button">
+            <span class="label">{{ showIndicators ? 'Hide Indicators' : 'Show Indicators' }}</span>
+            <mat-icon class="chevron"
+                [@rotateChevron]="showIndicators ? 'expanded' : 'collapsed'">expand_more</mat-icon>
+        </button>
+        <button class="elegant-toggle-btn progress-btn" type="button" (click)="openProgressGraph()">
+            <span class="label">Progress Graph</span>
+        </button>
+    </h2>
+    <div class="indicator-toggle" *ngIf="showIndicators">
+        <button mat-button class="toggle-btn" [ngClass]="{ active: activeTab === 'progress' }"
+            (click)="switchTab('progress')">
+            Progress Indicator
+        </button>
+
+        <button mat-button class="toggle-btn" [ngClass]="{ active: activeTab === 'context' }"
+            (click)="switchTab('context')">
+            Context Indicator
+        </button>
+    </div>
+
+
+    <!-- <div class="indicator-grid" *ngIf="showIndicators" [@indicatorExpand]>
+        <ng-container *ngFor="let pTab of be004Tabs; let catIndex = index">
+            <ng-container *ngIf="categoryYearsData[catIndex]?.topYear">
+                <div class="grid-header year-header">Year</div>
+                <div class="grid-header progress-header span-2">Progress Indicator</div>
+                <div class="grid-header context-header span-2">Context Indicator</div>
+                <div class="grid-header unit-header">Unit</div>
+                <div class="grid-header">Data Completeness</div>
+
+                <ng-container *ngFor="let pi of goal.ProgressIndicators; let i = index; let isFirst = first">
+                    <div *ngIf="isFirst" class="grid-item year-cell" [attr.rowspan]="goal.ProgressIndicators.length">
+                        {{ categoryYearsData[catIndex].topYear }}
+                    </div>
+                    
+                    <div class="grid-item progress-label">{{ pTab.name}}</div>
+                    <div class="grid-item highlight progress-value">{{
+                        calculateProgressIndicator(categoryYearsData[catIndex].topYear ?? 0, catIndex,pi.id) }}</div>
+                    <div class="grid-item context-indicator">{{ goal.ContextIndicators[i]?.context_indicator || '-' }}
+                    </div>
+                    <div class="grid-item highlight context-indicator">Description of high-intensity hotspots not yet
+                        addressed, including actions taken or planned</div>
+                    <div class="grid-item unit-cell">{{ goal.ContextIndicators[i]?.unit || '-' }}</div>
+                    <div class="grid-item highlight" *ngIf="categoryYearsData[catIndex]?.topYear !== null">
+                        {{ calculateDataCompleteness(categoryYearsData[catIndex].topYear?? 0,catIndex,pi.id) }}
+                    </div>
+                </ng-container>
+            </ng-container>
+
+            
+            <div class="grid-item full-width-row" *ngIf="hasRemainingYears(catIndex)"
+                (click)="showRemaining[catIndex] = !showRemaining[catIndex]">
+                <span>View {{ categoryYearsData[catIndex].remainingYears.length }} more years</span>
+                <span class="arrow-icon">{{ showRemaining[catIndex] ? '▲' : '▼' }}</span>
+            </div>
+            
+
+            <ng-container *ngIf="showRemaining[catIndex]">
+                <ng-container *ngFor="let year of categoryYearsData[catIndex].remainingYears">
+                    <ng-container *ngFor="let pi of goal.ProgressIndicators; let i = index; let isFirst = first">
+                        <div *ngIf="isFirst" class="grid-item year-cell"
+                            [attr.rowspan]="goal.ProgressIndicators.length">
+                            {{ year }}
+                        </div>
+                       
+                        <div class="grid-item progress-label">{{ pTab.name }}</div>
+                        <div class="grid-item highlight progress-value"> {{ calculateProgressIndicator(year ?? 0,
+                            catIndex) }} </div>
+                        <div class="grid-item context-indicator">{{ goal.ContextIndicators[i]?.context_indicator || '-' }}
+                        </div>
+                        <div class="grid-item highlight context-indicator">Description of high-intensity hotspots not
+                            yet addressed, including actions taken or planned</div>
+                        <div class="grid-item unit-cell">{{ goal.ContextIndicators[i]?.unit || '-' }}</div>
+                        <div class="grid-item highlight">{{ calculateDataCompleteness(year,catIndex,pi.id) }}</div>
+                    </ng-container>
+
+                    
+                </ng-container>
+            </ng-container>
+
+        </ng-container>
+    </div> -->
+    <div *ngIf="showIndicators && activeTab === 'progress'" class="indicator-wrapper" [@indicatorExpand]>
+        <ng-container *ngIf="hasCategoryData(selectedCategory?.id); else noDataBlock">
+            <div class="indicator-grid">
+                <ng-container *ngFor="let pTab of be004Tabs; let catIndex = index">
+                    <ng-container *ngIf="selectedCategory?.id === pTab.id">
+                        <div class="grid-header year-header">Year</div>
+                        <div class="grid-header progress-header span-2">Progress Indicator</div>
+                        <div class="grid-header">Monetary Value</div>
+                        <div class="grid-header">Data Completeness</div>
+                        <ng-container *ngFor="let pi of goal.ProgressIndicators; let i = index; let isFirst = first">
+                            <div *ngIf="isFirst" class="grid-item year-cell"
+                                [attr.rowspan]="goal.ProgressIndicators.length">
+                                {{ categoryYearsData[catIndex].topYear }}
+                            </div>
+                            <div class="grid-item progress-label">{{ pTab.name }}</div>
+                            <div class="grid-item progress-value">
+                                {{ calculateProgressIndicator(categoryYearsData[catIndex].topYear ?? 0, catIndex, pi.id)
+                                }}
+                            </div>
+                            <div class="grid-item">
+                                {{ getMonetaryTotal(categoryYearsData[catIndex].topYear ?? 0, catIndex) }}
+                            </div>
+                            <div class="grid-item highlight">
+                                {{ calculateDataCompleteness(categoryYearsData[catIndex].topYear ?? 0, catIndex, pi.id)
+                                }}
+                            </div>
+                        </ng-container>
+                        <div class="grid-item full-width-row" *ngIf="hasRemainingYears(catIndex)"
+                            (click)="showRemaining[catIndex] = !showRemaining[catIndex]">
+                            <span>View {{ categoryYearsData[catIndex].remainingYears.length }} more years</span>
+                            <span class="arrow-icon">{{ showRemaining[catIndex] ? '▲' : '▼' }}</span>
+                        </div>
+
+                        <ng-container *ngIf="showRemaining[catIndex]">
+                            <ng-container *ngFor="let year of categoryYearsData[catIndex].remainingYears">
+                                <ng-container
+                                    *ngFor="let pi of goal.ProgressIndicators; let i = index; let isFirst = first">
+                                    <div *ngIf="isFirst" class="grid-item year-cell"
+                                        [attr.rowspan]="goal.ProgressIndicators.length">
+                                        {{ year }}
+                                    </div>
+                                    <div class="grid-item progress-label">{{ pTab.name }}</div>
+                                    <div class="grid-item progress-value">
+                                        {{ calculateProgressIndicator(year ?? 0, catIndex, pi.id) }}
+                                    </div>
+
+                                    <div class="grid-item">
+                                        {{ getMonetaryTotal(year, catIndex) }}
+                                    </div>
+                                    <div class="grid-item highlight">
+                                        {{ calculateDataCompleteness(year ?? 0, catIndex, pi.id) }}
+                                    </div>
+                                </ng-container>
+                            </ng-container>
+                        </ng-container>
+                    </ng-container>
+                </ng-container>
+            </div>
+        </ng-container>
+
+        <!-- ===== NO DATA MESSAGE ===== -->
+        <ng-template #noDataBlock>
+            <div class="no-data-text">
+                No progress data available
+            </div>
+        </ng-template>
+    </div>
+
+
+    <div *ngIf="showIndicators && activeTab === 'context'" class="indicator-wrapper" [@indicatorExpand]>
+
+
+        <ng-container *ngIf="hasCategoryData(selectedCategory?.id); else noContextDataBlock">
+
+            <div class="indicator-grid1">
+                <ng-container *ngFor="let pTab of be004Tabs; let catIndex = index">
+                    <ng-container *ngIf="selectedCategory?.id == pTab.id">
+
+
+                        <div class="grid-header year-header">Year</div>
+                        <div class="grid-header progress-header span-2">Context Indicator</div>
+
+
+                        <ng-container *ngFor="let ci of goal.ContextIndicators; let i = index; let isFirst = first">
+                            <div *ngIf="isFirst" class="grid-item year-cell"
+                                [attr.rowspan]="goal.ContextIndicators.length">
+                                {{ categoryYearsData[catIndex].topYear }}
+                            </div>
+                            <div class="grid-item context-indicator">
+                                {{ goal.ContextIndicators[i]?.context_indicator || "-" }}
+                            </div>
+                            <!-- <div class="grid-item highlight context-indicator">
+
+                                {{ getContextDescription(categoryYearsData[catIndex].topYear ?? 0, catIndex) }}
+                            </div> -->
+                            <div class="grid-item highlight context-indicator">
+                                <ng-container
+                                    *ngFor="let entry of getContextDescription(categoryYearsData[catIndex].topYear ?? 0, catIndex)">
+                                    <div class="context-entry-box">
+                                        <span class="context-label">{{ entry.productName }}:</span>
+                                        <span class="context-value">{{ entry.contextDescription }}</span>
+                                    </div>
+                                </ng-container>
+                            </div>
+
+
+                        </ng-container>
+
+
+                        <div class="grid-item full-width-row" *ngIf="hasRemainingYears(catIndex)"
+                            (click)="showRemaining[catIndex] = !showRemaining[catIndex]">
+                            <span>View {{ categoryYearsData[catIndex].remainingYears.length }} more years</span>
+                            <span class="arrow-icon">{{ showRemaining[catIndex] ? '▲' : '▼' }}</span>
+                        </div>
+
+                        <ng-container *ngIf="showRemaining[catIndex]">
+                            <ng-container *ngFor="let year of categoryYearsData[catIndex].remainingYears">
+                                <ng-container
+                                    *ngFor="let ci of goal.ContextIndicators; let i = index; let isFirst = first">
+                                    <div *ngIf="isFirst" class="grid-item year-cell"
+                                        [attr.rowspan]="goal.ContextIndicators.length">
+                                        {{ year }}
+                                    </div>
+                                    <div class="grid-item context-indicator">
+                                        {{ goal.ContextIndicators[i]?.context_indicator || "-" }}
+                                    </div>
+                                    <!-- <div class="grid-item highlight context-indicator">
+
+                                        {{ getContextDescription(year ?? 0, catIndex) }}
+                                    </div> -->
+                                    <div class="grid-item highlight context-indicator">
+                                        <ng-container *ngFor="let entry of getContextDescription(year ?? 0, catIndex)">
+                                            <div class="context-entry-box">
+                                                <span class="context-label">{{ entry.productName }}:</span>
+                                                <span class="context-value">{{ entry.contextDescription }}</span>
+                                            </div>
+                                        </ng-container>
+                                    </div>
+
+
+
+                                </ng-container>
+                            </ng-container>
+                        </ng-container>
+
+                    </ng-container>
+                </ng-container>
+            </div>
+        </ng-container>
+
+
+        <ng-template #noContextDataBlock>
+            <div class="no-data-text">
+                No context data available
+            </div>
+        </ng-template>
+    </div>
+
+    <ng-container *ngIf="products!.length > 0">
+        <div [formArrayName]="arrayName" class="sites-container">
+            <mat-accordion>
+                <mat-expansion-panel *ngFor="let site of products.controls; let i = index" [formGroupName]="i"
+                    class="site-panel">
+                    <mat-expansion-panel-header class="site-panel-header fitness-inputs-header">
+                        <!-- <mat-panel-title class="site-title">{{ site.get('financialAsset')?.value }}</mat-panel-title> -->
+
+                        <!-- === -->
+                        <div class="site-header">
+                            <div class="site-header-item">
+                                <span class="heading">Financial Asset:</span>
+                                <span class="site-title">{{ site.get('financialAsset')?.value || '-' }}</span>
+                            </div>
+                            <div class="site-header-item">
+                                <span class="heading">Financial Asset ID</span>
+                                <span class="site-title">{{ site.get('financialAssetId')?.value || '-' }}</span>
+                            </div>
+                            <div class="site-header-item">
+                                <span class="heading">Reporting Period (Days):</span>
+                                <span class="site-title">{{ site.get('reportingPeriod')?.value || ' ' }}</span>
+                            </div>
+                        </div>
+                    </mat-expansion-panel-header>
+
+
+                    <mat-tab-group [(selectedIndex)]="selectedTabIndex"
+                        (selectedIndexChange)="onCategoryChange($event)">
+                        <ng-container formArrayName="categories">
+                            <ng-container *ngFor="let tab of be004Tabs; let j = index" [formGroupName]="j">
+                                <mat-tab label="{{ tab.name }}">
+                                    <div formArrayName="fitnessInputs" class="fitness-inputs-container">
+                                        <div class="fitness-inputs-header">
+                                            <h3 class="fitness-inputs-title">Progress indicator data</h3>
+                                            <button class="add-fitness-btn" mat-flat-button color="primary"
+                                                type="button" (click)="addFitnessInput(i, j)">Add progress data</button>
+                                        </div>
+
+                                        <!-- <div *ngFor="let input of getFitnessInputs(site, j).controls; let k = index"
+                                            [formGroupName]="k" class="row fitness-input-row"> -->
+                                        <mat-expansion-panel
+                                            *ngFor="let input of getFitnessInputs(site, j).controls; let k = index"
+                                            [formGroupName]="k" class="row fitness-input-row">
+                                            <mat-expansion-panel-header class="site-panel-header fitness-inputs-header"
+                                                style="width: 100%;">
+                                                <div class="site-header">
+                                                    <div class="site-header-item">
+                                                        <!-- <span class="site-title"
+                                                            *ngIf="input.get('year')?.value; else selectYear">
+                                                            {{ input.get('year')?.value | date:'yyyy' }}
+                                                        </span>
+                                                        <ng-template #selectYear>
+                                                            Select year
+                                                        </ng-template> -->
+                                                        <span class="site-title"
+                                                            *ngIf="isValidYearShow(input.get('year')?.value); else selectYear">
+                                                            {{ input.get('year')?.value | date:'yyyy' }}
+                                                        </span>
+
+                                                        <ng-template #selectYear>
+
+                                                        </ng-template>
+                                                    </div>
+                                                </div>
+                                            </mat-expansion-panel-header>
+                                            <div class="row fitness-input-row">
+                                                <div class="col-md-3">
+                                                    <mat-form-field appearance="outline" class="w-100">
+                                                        <mat-label>Relevance</mat-label>
+                                                        <mat-select formControlName="relevance"
+                                                            (selectionChange)="onRelevanceChange(i,j,k)">
+                                                            <mat-option *ngFor="let option of relevantsArr"
+                                                                [value]="option.id">{{
+                                                                option.name }}</mat-option>
+                                                        </mat-select>
+                                                        <mat-error
+                                                            *ngIf="site.get('relevance')?.hasError('required') && site.get('relevance')?.touched">
+                                                            Relevance is required
+                                                        </mat-error>
+                                                    </mat-form-field>
+                                                </div>
+
+
+
+                                                <mat-form-field appearance="outline" class="w-100 fitness-input-field">
+                                                    <mat-label>Year</mat-label>
+                                                    <input matInput readonly [matDatepicker]="yearPicker"
+                                                        formControlName="year" placeholder="Select Year" />
+                                                    <mat-datepicker-toggle matSuffix
+                                                        [for]="yearPicker"></mat-datepicker-toggle>
+
+                                                    <mat-datepicker #yearPicker startView="multi-year"
+                                                        (yearSelected)="setYear($event, yearPicker, i, j, k); calculateFinancialFitness(i, j, k)"
+                                                        panelClass="year-picker"></mat-datepicker>
+
+                                                    <mat-error
+                                                        *ngIf="input.get('year')?.hasError('duplicateYear') && input.get('year')?.touched">
+                                                        This year is already in site.
+                                                    </mat-error>
+
+                                                    <mat-error
+                                                        *ngIf="input.get('year')?.hasError('required') && input.get('year')?.touched">
+                                                        Year is required.
+                                                    </mat-error>
+                                                </mat-form-field>
+
+
+
+
+                                                <div class="col-md-3">
+                                                    <mat-form-field appearance="outline" class="w-100">
+                                                        <mat-label>Monetary value</mat-label>
+                                                        <input matInput formControlName="monetaryValue"
+                                                            appNumberFormatter type="text" readonly />
+                                                    </mat-form-field>
+                                                </div>
+
+                                                <div class="col-md-3">
+                                                    <mat-form-field appearance="outline"
+                                                        class="w-100 fitness-input-field">
+                                                        <mat-label>Purchase Fitness</mat-label>
+                                                        <input matInput type="text" [readonly]="true"
+                                                            formControlName="financialFitness" readonly />
+                                                    </mat-form-field>
+                                                </div>
+                                                <div class="criteria-section">
+                                                    <div class="criteria-grid">
+                                                        <mat-checkbox formControlName="financialAssetDoes"
+                                                            (change)="calculateFinancialFitness(i, j, k)"
+                                                            class="criteria-item"> Financial asset DOES NOT fall into
+                                                            the No
+                                                            Use category</mat-checkbox>
+                                                        <mat-checkbox formControlName="hotspotAssessment"
+                                                            (change)="calculateFinancialFitness(i, j, k)"
+                                                            class="criteria-item">
+                                                            Hotspot assessment conducted</mat-checkbox>
+                                                        <mat-checkbox formControlName="potentialHotspotsIdentified"
+                                                            (change)="calculateFinancialFitness(i, j, k)"
+                                                            class="criteria-item">
+                                                            Potential hotspots identified</mat-checkbox>
+                                                        <mat-checkbox formControlName="actualHotspots"
+                                                            (change)="calculateFinancialFitness(i, j, k)"
+                                                            class="criteria-item">
+                                                            Actual hotspots confirmed and steps taken to address
+                                                            them</mat-checkbox>
+
+                                                        <mat-checkbox formControlName="allHighIntensityHotspot"
+                                                            (change)="calculateFinancialFitness(i, j, k)"
+                                                            class="criteria-item">All high-intensity hotspot addressed
+                                                            and
+                                                            steps taken to address the others</mat-checkbox>
+                                                        <mat-checkbox formControlName="allHotspotsHaveBeen"
+                                                            (change)="calculateFinancialFitness(i, j, k)"
+                                                            class="criteria-item">
+                                                            All hotspots have been avoided or eliminated</mat-checkbox>
+
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-12">
+                                                    <mat-form-field appearance="outline" class="w-100">
+                                                        <mat-label>Comments</mat-label>
+                                                        <textarea matInput formControlName="comments"></textarea>
+                                                    </mat-form-field>
+                                                </div>
+                                                <div class="col-md-12">
+                                                    <mat-form-field appearance="outline" class="w-100">
+                                                        <mat-label>Context Description</mat-label>
+                                                        <textarea matInput formControlName="contextDescription"
+                                                            (input)="triggerChangeDetection()"
+                                                            placeholder="Type context details...">
+                                                    </textarea>
+
+
+                                                    </mat-form-field>
+                                                </div>
+                                                <div class="col-md-1 text-right">
+                                                    <button mat-icon-button color="warn" type="button"
+                                                        (click)="removeFitnessInput(i, j,k)"
+                                                        [disabled]="getFitnessInputs(site,j).length === 1"
+                                                        matTooltip="Remove this entry">
+                                                        <mat-icon>remove_circle</mat-icon>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </mat-expansion-panel>
+                                        <!-- close fitness input row -->
+                                    </div> <!-- close fitness-inputs-container -->
+                                    <!-- close row -->
+                                </mat-tab>
+                            </ng-container>
+                        </ng-container>
+                    </mat-tab-group>
+                </mat-expansion-panel>
+            </mat-accordion>
+        </div>
+
+        <div class="next-button-wrapper">
+            <button mat-flat-button color="primary" class="custom-submit-btn" type="button" (click)="submitForm()">
+                <span *ngIf="!loading">Submit</span>
+                <mat-spinner *ngIf="loading" [diameter]="40" color="accent"></mat-spinner>
+            </button>
+        </div>
+    </ng-container>
+    <ng-template #progressGraphDialog>
+
+
+        <div class="dialog-header">
+
+            <h2 mat-dialog-title>
+                Annual Progress Trajectory
+            </h2>
+
+            <button mat-icon-button mat-dialog-close class="close-btn">
+                <mat-icon>close</mat-icon>
+            </button>
+
+        </div>
+
+        <mat-dialog-content>
+
+            <apx-chart *ngIf="chartOptions" [series]="chartOptions.series" [chart]="chartOptions.chart"
+                [stroke]="chartOptions.stroke" [markers]="chartOptions.markers" [xaxis]="chartOptions.xaxis"
+                [yaxis]="chartOptions.yaxis" [legend]="chartOptions.legend" [tooltip]="chartOptions.tooltip"
+                [dataLabels]="chartOptions.dataLabels">
+            </apx-chart>
+
+        </mat-dialog-content>
+
+    </ng-template>

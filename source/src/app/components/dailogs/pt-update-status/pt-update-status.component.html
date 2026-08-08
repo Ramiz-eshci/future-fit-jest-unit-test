@@ -1,0 +1,51 @@
+<h1 mat-dialog-title>Update Status</h1>
+<div mat-dialog-content>
+    <table>
+        <tr>
+            <th>Full Name</th>
+            <th>Child Name</th>
+            <th>Reading Value</th>
+            <th>Status Name</th>
+            <th>Reading Date</th>
+        </tr>
+        <tr>
+            <td>{{ data.full_name }}</td>
+            <td>{{ data.child_name }}</td>
+            <td>{{ data.reading_value }}</td>
+            <td>{{ data.status_name }}</td>
+            <td>{{ data.reading_date }}</td>
+        </tr>
+    </table>
+</div>
+<div mat-dialog-content>
+    <form [formGroup]="form">
+        <div class="row">
+            <div class="col-lg-6">
+                <mat-label class="f-w-600 m-b-8 d-block">Status</mat-label>
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-select [(value)]="selectedStatus">
+                        @for(option of status; track option.status_id) {
+                        <mat-option [value]="option.status_id">{{
+                            option.status_name
+                            }}</mat-option>
+                        }
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <div class="col-md-6" *ngIf="selectedStatus === 7">
+                <mat-label class="f-w-600 m-b-8 d-block">Next PT Reading Date</mat-label>
+                <mat-form-field appearance="outline" class="w-100" color="primary">
+                    <input matInput [matDatepicker]="picker" formControlName="next_pt_reading_date" />
+                    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                    <mat-datepicker #picker></mat-datepicker>
+                </mat-form-field>
+            </div>
+        </div>
+    </form>
+
+    <div mat-dialog-actions>
+        <button mat-flat-button color="primary" [disabled]="form.invalid" class="m-r-8"
+            (click)="onSubmit()">Submit</button>
+        <button mat-flat-button (click)="onClose()" mat-stroked-button color="warn">Close</button>
+    </div>
+</div>

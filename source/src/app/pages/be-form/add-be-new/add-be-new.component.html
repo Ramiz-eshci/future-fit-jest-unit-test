@@ -1,0 +1,232 @@
+ 
+<div class="loader-overlay" *ngIf="isLoading">
+  <mat-progress-spinner mode="indeterminate" diameter="60"></mat-progress-spinner>
+</div>
+
+<mat-card class="cardWithShadow theme-card">
+    <mat-card-header>
+        <mat-card-title class="m-b-0"> {{ title }}</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content class="b-t-1">
+
+        <form [formGroup]="siteForm" (ngSubmit)="onSubmit()" autocomplete="off">
+            <mat-horizontal-stepper #stepper [linear]="false" (selectionChange)="onStepChange($event)">
+
+                <mat-step label="Sites" #stepper [stepControl]="SiteformGroup"
+                    [ngClass]="{ 'active-header': activeStep === 1}" *ngIf="siteSidebarItems.length > 0">
+                    <!-- <div class="step-options-container"> -->
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="steps">
+                            <!-- <div class="step-options-row"> -->
+                            <div class="step" *ngFor="let item of siteSidebarItems" [class.active]="item === selected"
+                                (click)="selectItem(item)">
+                                {{ item }}
+
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <ng-container *ngIf="getSelectedGoal('site') as goal">
+                        <ng-container [ngSwitch]="selected">
+                            <app-be01-form *ngSwitchCase="'BE01'" [parentForm]="be01Form" [arrayName]="'sites'"
+                                [goal]="goal" [fitEntryId]="fitEntryId" (formSubmitted)="handleFormSubmission($event)">
+                            </app-be01-form>
+                            <app-be02-form *ngSwitchCase="'BE02'" [parentForm]="be02Form" [arrayName]="'sites'"
+                                [goal]="goal" [fitEntryId]="fitEntryId" (formSubmitted)="handleFormSubmission($event)">
+                            </app-be02-form>
+
+                            <app-be03-form *ngSwitchCase="'BE03'" [parentForm]="be03Form" [arrayName]="'sites'"
+                                [goal]="getSelectedGoal('site')" [fitEntryId]="fitEntryId"
+                                (formSubmitted)="handleFormSubmission($event)"></app-be03-form>
+                            <!-- <app-be04-form *ngSwitchCase="'BE04'" [parentForm]="be04Form" [arrayName]="'purchase'"
+                                [goal]="getSelectedGoal('site')" [fitEntryId]="fitEntryId"
+                                (formSubmitted)="handleFormSubmission($event)"></app-be04-form> -->
+                            <app-be05-form *ngSwitchCase="'BE05'" [parentForm]="be05Form" [arrayName]="'sites'"
+                                [goal]="getSelectedGoal('site')" [fitEntryId]="fitEntryId"
+                                (formSubmitted)="handleFormSubmission($event)"> </app-be05-form>
+                            <app-be06-form *ngSwitchCase="'BE06'" [parentForm]="be06Form" [arrayName]="'sites'"
+                                [goal]="getSelectedGoal('site')" [fitEntryId]="fitEntryId"
+                                (formSubmitted)="handleFormSubmission($event)"> </app-be06-form>
+
+
+                            <app-be07-form *ngSwitchCase="'BE07'" [parentForm]="be07Form" [arrayName]="'sites'"
+                                [goal]="getSelectedGoal('site')" [fitEntryId]="fitEntryId"
+                                (formSubmitted)="handleFormSubmission($event)"> </app-be07-form>
+                            <app-be08-form *ngSwitchCase="'BE08'" [parentForm]="be08Form" [arrayName]="'sites'"
+                                [goal]="getSelectedGoal('site')" [fitEntryId]="fitEntryId"
+                                (formSubmitted)="handleFormSubmission($event)"> </app-be08-form>
+                            <app-be09-form *ngSwitchCase="'BE09'" [parentForm]="be09Form" [arrayName]="'sites'"
+                                [goal]="getSelectedGoal('site')" [fitEntryId]="fitEntryId"
+                                (formSubmitted)="handleFormSubmission($event)"> </app-be09-form>
+
+                        </ng-container>
+                    </ng-container>
+                </mat-step>
+                <!-- ======================= SUPPLY CHAIN TAB ======================= -->
+                <mat-step label="Supply Chain" [stepControl]="SupplyChainFormGroup" *ngIf="supplyChainSidebarItems.length > 0"
+                    [ngClass]="{ 'active-header': activeStep === 2 }">
+
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+
+                        <div class="steps">
+                            <div class="step" *ngFor="let item of supplyChainSidebarItems"
+                                [class.active]="item == selected" [class.active]="item == selected"
+                                (click)="selectItem(item)">
+                                {{ item }}
+                            </div>
+                        </div>
+                    </div>
+                     
+                    <div *ngIf="isSupplyChainLoading" class="text-center p-4">
+                        <mat-progress-spinner mode="indeterminate" diameter="40">
+                        </mat-progress-spinner>
+                    </div>
+
+                    <ng-container *ngIf="!isSupplyChainLoading" [ngSwitch]="selected">
+
+                        <app-be04-form *ngSwitchCase="'BE04'" [parentForm]="be04Form" [arrayName]="'purchase'"
+                            [goal]="getSelectedGoal('supplyChain')" [fitEntryId]="fitEntryId"
+                            (formSubmitted)="handleFormSubmission($event)">
+                        </app-be04-form>
+
+                    </ng-container>
+
+                </mat-step>
+
+
+
+
+
+                <mat-step label="Employees" [stepControl]="EmpformGroup" *ngIf="employeeSidebarItems.length > 0" 
+                    [ngClass]="{ 'active-header': activeStep === 2 }">
+
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="steps">
+                            <!-- <div class="step-options-row"> -->
+                            <div class="step" *ngFor="let item of employeeSidebarItems"
+                                [class.active]="item === selected" (click)="selectItem(item)">
+                                {{ item }}
+
+                            </div>
+                        </div>
+                    </div>
+                    <ng-container *ngIf="getSelectedGoal('employee') as goal">
+                        <ng-container [ngSwitch]="selected">
+                            <app-be10-form *ngSwitchCase="'BE10'" [parentForm]="be10Form" [arrayName]="'employee'"
+                                [goal]="goal" [fitEntryId]="fitEntryId" (formSubmitted)="handleFormSubmission($event)">
+                            </app-be10-form>
+                            <app-be11-form *ngSwitchCase="'BE11'" [parentForm]="be11Form" [arrayName]="'employee'"
+                                [goal]="getSelectedGoal('employee')" [fitEntryId]="fitEntryId"
+                                (formSubmitted)="handleFormSubmission($event)"> </app-be11-form>
+                            <app-be12-form *ngSwitchCase="'BE12'" [parentForm]="be12Form" [arrayName]="'employee'"
+                                [goal]="getSelectedGoal('employee')" [fitEntryId]="fitEntryId"
+                                (formSubmitted)="handleFormSubmission($event)"> </app-be12-form>
+                            <app-be13-form *ngSwitchCase="'BE13'" [parentForm]="be13Form" [arrayName]="'employee'"
+                                [goal]="getSelectedGoal('employee')" [fitEntryId]="fitEntryId"
+                                (formSubmitted)="handleFormSubmission($event)"> </app-be13-form>
+                            <app-be14-form *ngSwitchCase="'BE14'" [parentForm]="be14Form" [arrayName]="'employee'"
+                                [goal]="getSelectedGoal('employee')" [fitEntryId]="fitEntryId"
+                                (formSubmitted)="handleFormSubmission($event)"> </app-be14-form>
+
+                        </ng-container>
+                    </ng-container>
+                </mat-step>
+
+
+                <mat-step label="Product" [stepControl]="ProductformGroup" *ngIf="productSidebarItems.length > 0"
+                    [ngClass]="{ 'active-header': activeStep === 3 }">
+
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="steps">
+                            <!-- <div class="step-options-row"> -->
+                            <div class="step" *ngFor="let item of productSidebarItems"
+                                [class.active]="item === selected" (click)="selectItem(item)">
+                                {{ item }}
+
+                            </div>
+                        </div>
+                    </div>
+                    <ng-container *ngIf="getSelectedGoal('product') as goal">
+                        <ng-container [ngSwitch]="selected">
+                            <app-be15-form *ngSwitchCase="'BE15'" [parentForm]="be15Form" [arrayName]="'products'"
+                                [goal]="goal" [fitEntryId]="fitEntryId" (formSubmitted)="handleFormSubmission($event)">
+                            </app-be15-form>
+
+                            <app-be17-form *ngSwitchCase="'BE17'" [parentForm]="be17Form" [arrayName]="'products'"
+                                [goal]="getSelectedGoal('product')" [fitEntryId]="fitEntryId"
+                                (formSubmitted)="handleFormSubmission($event)"> </app-be17-form>
+                            <app-be18-form *ngSwitchCase="'BE18'" [parentForm]="be18Form" [arrayName]="'products'"
+                                [goal]="getSelectedGoal('product')" [fitEntryId]="fitEntryId"
+                                (formSubmitted)="handleFormSubmission($event)"> </app-be18-form>
+
+                            <app-be16-form *ngSwitchCase="'BE16'" [parentForm]="be16Form" [arrayName]="'products'"
+                                [goal]="getSelectedGoal('product')" [fitEntryId]="fitEntryId"
+                                (formSubmitted)="handleFormSubmission($event)"> </app-be16-form>
+                            <app-be19-form *ngSwitchCase="'BE19'" [parentForm]="be19Form" [arrayName]="'products'"
+                                [goal]="getSelectedGoal('product')" [fitEntryId]="fitEntryId"
+                                (formSubmitted)="handleFormSubmission($event)"> </app-be19-form>
+                           
+                        </ng-container>
+                    </ng-container>
+                </mat-step>
+                <!-- ======================= GOVERNANCE TAB ======================= -->
+                <mat-step label="Governance" [stepControl]="GovernanceformGroup" *ngIf="governanceSidebarItems.length > 0"
+                    [ngClass]="{ 'active-header': activeStep === 4 }">
+
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+
+                        <div class="steps">
+                            <div class="step" *ngFor="let item of governanceSidebarItems"
+                                [class.active]="item === selected" (click)="selectItem(item)">
+                                {{ item }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <ng-container [ngSwitch]="selected">
+
+                        <app-be20-form *ngSwitchCase="'BE20'" [parentForm]="be20Form" [arrayName]="'employee'"
+                            [goal]="getSelectedGoal('product')" [fitEntryId]="fitEntryId"
+                            (formSubmitted)="handleFormSubmission($event)">
+                        </app-be20-form>
+
+                        <app-be21-form *ngSwitchCase="'BE21'" [parentForm]="be21Form" [arrayName]="'sites'"
+                            [goal]="getSelectedGoal('product')" [fitEntryId]="fitEntryId"
+                            (formSubmitted)="handleFormSubmission($event)">
+                        </app-be21-form>
+
+                        <app-be22-form *ngSwitchCase="'BE22'" [parentForm]="be22Form" [arrayName]="'sites'"
+                            [goal]="getSelectedGoal('product')" [fitEntryId]="fitEntryId"
+                            (formSubmitted)="handleFormSubmission($event)">
+                        </app-be22-form>
+
+                        <app-be23-form *ngSwitchCase="'BE23'" [parentForm]="be23Form" [arrayName]="'financial'"
+                            [goal]="getSelectedGoal('product')" [fitEntryId]="fitEntryId"
+                            (formSubmitted)="handleFormSubmission($event)">
+                        </app-be23-form>
+
+                    </ng-container>
+
+                </mat-step>
+
+            </mat-horizontal-stepper>
+        </form>
+    </mat-card-content>
+</mat-card>

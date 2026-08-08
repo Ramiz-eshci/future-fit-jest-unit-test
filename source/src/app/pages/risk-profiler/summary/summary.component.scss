@@ -1,0 +1,101 @@
+.impact-card {
+  border-radius: 10px;
+  border: 3px solid #4a94a6;
+  overflow: hidden;
+  height: 100%;
+}
+
+.impact-header {
+  background: #4a94a6;
+  color: #fff;
+  font-weight: 600;
+  text-align: center;
+  padding: 10px;
+  font-size: 18px;
+}
+
+.impact-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  padding: 8px 10px;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+}
+
+.impact-row.header {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  background: #f8f9fa;
+}
+
+.label {
+  font-size: 13px;
+}
+
+/* Pills */
+.pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Business activity colors */
+.activity.high {
+  background: #1f4d57;
+  color: #fff;
+}
+
+.activity.moderate {
+  background: #5fa6b6;
+  color: #fff;
+}
+
+.activity.low {
+  background: #9fd0dc;
+  color: #fff;
+}
+
+.activity.unlikely {
+  background: #d9d9d9;
+  color: #555;
+}
+
+/* Company pill */
+.pill.company {
+  background: #ffdcb3;
+  color: #8a4b00;
+}
+.business-inputs {
+  padding: 5px 5px;   /* top-bottom | left-right */
+}
+.input-card {
+  padding: 16px 18px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  background: #fff;
+}
+.input-card-header {
+  padding: 14px 16px;
+  font-size: 18px;
+  font-weight: 600;
+}
+.input-row {
+  padding: 12px 0;      /* top-bottom spacing */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.input-row:not(:last-child) {
+  border-bottom: 1px solid #eee;
+}
+.badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  line-height: 1;
+}

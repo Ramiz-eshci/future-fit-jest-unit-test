@@ -1,0 +1,56 @@
+<mat-card class="cardWithShadow theme-card">
+  <mat-card-header>
+    <mat-card-title class="m-b-0">Summary</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content class="b-t-1">
+    <div class="container-fluid mt-3">
+      <div class="row g-3 ">
+
+        <div class="col-md-4 business-inputs" *ngFor="let section of sections">
+          <div class="impact-card">
+
+            <!-- CARD HEADER -->
+            <div class="impact-header">
+              {{ section.title }}
+            </div>
+
+            <!-- TABLE HEADER -->
+            <div class="impact-row header">
+              <div></div>
+              <div>Business activity</div>
+              <div>Company</div>
+            </div>
+
+            <!-- ROWS -->
+            <div
+              class="impact-row"
+              *ngFor="let item of section.items">
+
+              <div class="label">
+                <strong>{{ item.code }}:</strong> {{ item.label }}
+              </div>
+
+              <div>
+                <span class="pill activity"
+                  [ngClass]="item.activity.toLowerCase()">
+                  {{ item.activity }}
+                </span>
+              </div>
+
+              <div>
+                <span class="pill company">
+                  {{ item.company }}
+                  <i class="ms-1 bi bi-box-arrow-up-right"></i>
+                </span>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>

@@ -1,0 +1,9 @@
+.clickable-fit {
+  cursor: pointer;
+  color: blue;
+  text-decoration: underline;
+}
+::ng-deep .mat-mdc-checkbox .mdc-checkbox .mdc-checkbox__background {
+  border: 2px solid #9dddf2 !important; // Sky blue border
+  border-radius: 4px;
+}

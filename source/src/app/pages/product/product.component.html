@@ -1,0 +1,125 @@
+<mat-card class="cardWithShadow theme-card">
+    <mat-card-header>
+        <mat-card-title class="m-b-0">{{title}} List</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="">
+        <div class="row align-items-center mb-3">
+            <div class="col-md-3"  *ngIf="canAdd ; else emptyCol">
+                <a [routerLink]="['/product/add']" mat-flat-button color="primary" #tooltip="matTooltip"
+                    matTooltip="Add New {{title}}" matTooltipPosition="above">
+                    <mat-icon>add</mat-icon> Add New
+                </a>
+            </div>
+             <ng-template #emptyCol>
+                <div class="col-md-3"></div>
+            </ng-template>
+            <div class="col-md-3">
+            </div>
+            <div class="col-md-3">
+            </div>
+            <div class="col-md-3 text-end">
+                <mat-form-field class="w-100" appearance="outline">
+                    <mat-label>Search</mat-label>
+                    <input matInput placeholder="Search" (input)="applyFilter($event)" />
+                </mat-form-field>
+            </div>
+        </div>
+
+        <table mat-table [dataSource]="dataSource" class="listing-table w-100">
+
+            <!-- Column Definitions -->
+            <ng-container *ngFor="let column of displayedColumns" [matColumnDef]="column">
+                <th mat-header-cell *matHeaderCellDef>{{ column | formatColumn }}</th>
+
+                <td mat-cell *matCellDef="let emp">
+                    <span class="mobile-label">{{ column | formatColumn }}:</span>
+
+
+                    <ng-container *ngIf="column == 'year'; else checkRevenue">
+                        <div class="multi-line-wrapper">
+                            <ng-container *ngFor="let y of emp.year?.split(',')">
+                                <div class="multi-line-item">{{ y.trim() }}</div>
+                            </ng-container>
+                        </div>
+                    </ng-container>
+
+
+
+                    <ng-template #checkRevenue>
+                        <ng-container *ngIf="column == 'revenue_cost'; else normalCell">
+                            <div class="multi-line-wrapper">
+                                <ng-container *ngFor="let r of emp.revenue_cost?.split(',')">
+                                    <div class="multi-line-item">{{ r.trim() | number }}</div>
+                                </ng-container>
+                            </div>
+                        </ng-container>
+                    </ng-template>
+
+
+
+                    <ng-template #normalCell>
+                        {{ emp[column] }}
+                    </ng-template>
+                </td>
+
+            </ng-container>
+
+
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>Actions</th>
+                <td mat-cell *matCellDef="let emp">
+                    <button mat-icon-button [matMenuTriggerFor]="menu">
+                        <mat-icon>more_vert</mat-icon>
+                    </button>
+                    <mat-menu #menu="matMenu">
+                        <!-- <a mat-menu-item [routerLink]="['/product/edit', emp.product_id]">
+                            <mat-icon>edit</mat-icon>
+                            <span>Edit</span>
+                        </a> -->
+                        <a mat-menu-item *ngIf="canEdit" [routerLink]="['/product/edit', emp.product_id]">
+
+                            <mat-icon>edit</mat-icon>
+                            <span>Edit</span>
+
+                        </a>
+                        <!--                       
+                        <button mat-menu-item (click)="deleteCompany(emp.product_id)">
+                            <mat-icon>delete</mat-icon>
+                            <span>Delete</span>
+                        </button> -->
+                        <button mat-menu-item *ngIf="canDelete" (click)="deleteCompany(emp.product_id)">
+
+                            <mat-icon>delete</mat-icon>
+                            <span>Delete</span>
+
+                        </button>
+
+                    </mat-menu>
+                </td>
+            </ng-container>
+
+            <!-- Header Row -->
+            <tr mat-header-row *matHeaderRowDef="displayedColumns.concat(['actions'])"></tr>
+
+            <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell"
+                    [attr.colspan]="RoleID == 1 ? displayedColumns.length + 1 : displayedColumns.length"
+                    style="text-align: center;">
+                    No records found.
+                </td>
+            </tr>
+
+            <!-- Data Row -->
+            <tr mat-row *matRowDef="let emprow; columns: displayedColumns.concat(['actions'])"></tr>
+        </table>
+
+        <!-- Loading Indicator -->
+        <mat-progress-bar mode="indeterminate" *ngIf="isLoading"></mat-progress-bar>
+
+        <!-- Paginator -->
+        <mat-paginator #paginator [length]="totalData" [pageSizeOptions]="pageSizes"
+            showFirstLastButtons></mat-paginator>
+
+    </mat-card-content>
+
+</mat-card>

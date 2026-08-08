@@ -1,0 +1,401 @@
+/* You can add global styles to this file, and also import other style files */
+
+
+@font-face {
+  font-family: 'Poppins-Light';
+  src: url('./fonts/Poppins-Light.woff2') format('woff2'),
+    url('./fonts/Poppins-Light.woff') format('woff'),
+    url('./fonts/Poppins-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Poppins-Regular';
+  src: url('./fonts/Poppins-Regular.woff2') format('woff2'),
+    url('./fonts/Poppins-Regular.woff') format('woff'),
+    url('./fonts/Poppins-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+@font-face {
+  font-family: 'Poppins-Medium';
+  src: url('./fonts/Poppins-Medium.woff2') format('woff2'),
+    url('./fonts/Poppins-Medium.woff') format('woff'),
+    url('./fonts/Poppins-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Poppins-SemiBold';
+  src: url('./fonts/Poppins-SemiBold.woff2') format('woff2'),
+    url('./fonts/Poppins-SemiBold.woff') format('woff'),
+    url('./fonts/Poppins-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Poppins-Bold';
+  src: url('./fonts/Poppins-Bold.woff2') format('woff2'),
+    url('./fonts/Poppins-Bold.woff') format('woff'),
+    url('./fonts/Poppins-Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body,
+* {
+  margin: 0;
+  //font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: 'Poppins-Regular';
+  box-sizing: border-box;
+}
+
+
+//Responsive Table
+/*Table Responsive*/
+table {
+  width: 100%;
+}
+
+td.mat-column-actions {
+  width: 20px;
+  padding-right: 8px !important;
+}
+
+.mat-row {
+  &:hover {
+    background-color: #e9f3ff;
+  }
+
+  a {
+    color: #16cdc7;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.mat-form-field {
+  font-size: 14px;
+  width: 100%;
+}
+
+
+.mobile-label {
+  display: none;
+}
+
+@media screen and (max-width: 960px) {
+
+  .mat-mdc-table {
+    margin-top: 0;
+    // padding: 0 48px 0 16px;
+    color: rgba(0, 0, 0, 0.54);
+    margin-bottom: 0;
+  }
+
+  .mat-elevation-z8 {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .mobile-label {
+    width: 80px;
+    display: inline-block;
+    font-weight: bold;
+  }
+
+  .mat-mdc-header-row {
+    display: none;
+  }
+
+  tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .mat-mdc-table {
+    background: transparent;
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .mat-mdc-row {
+      display: flex;
+      overflow: hidden;
+      height: auto;
+      position: relative;
+      clear: both;
+      box-shadow: 0 2px 1px -1px rgba(0, 0, 0, .2), 0 1px 1px 0 rgba(0, 0, 0, .14), 0 1px 3px 0 rgba(0, 0, 0, .12);
+      background-color: #fff;
+      border-radius: 3px;
+
+      +.mat-mdc-row {
+        margin-top: 24px;
+      }
+    }
+
+    .mat-mdc-row {
+      flex-direction: column !important;
+      align-items: start !important;
+      padding: 8px 24px;
+    }
+
+    .mat-mdc-cell {
+      display: block;
+      width: 100%;
+      padding: 0 16px;
+      margin: 16px 0;
+      border: 0 none;
+
+      &:first-child {
+
+        //   padding: 0 48px 0 16px;
+        a {
+          font-size: 18px;
+          // font-weight: 400;
+          color: inherit;
+        }
+
+        &:before {
+          display: none;
+        }
+      }
+
+      &.m-card-sub-title {
+        margin-top: 0px;
+        margin-bottom: 0px;
+        padding: 0 48px 0 16px;
+        color: rgba(0, 0, 0, .54);
+      }
+    }
+
+    .mat-mdc-cell span {
+      width: 50%;
+      font-size: 16px;
+    }
+
+    //   .has_label_on_mobile {
+    //     &:before {
+    //       content: attr(data-label);
+    //       display: inline;
+    //       font-weight: normal;
+    //     }
+    //   }
+
+    .mat-column-actions {
+      width: auto;
+      padding: 8px 0 0 !important;
+      margin: 0;
+      position: absolute;
+      top: 0;
+      right: 0;
+
+      &:before {
+        display: none;
+      }
+    }
+  }
+
+  .mat-paginator {
+    margin-top: 24px;
+  }
+
+}
+
+.basic-container {
+  padding: 30px;
+}
+
+.version-info {
+  font-size: 8pt;
+  float: right;
+}
+
+/*Table Responsive*/
+//Responsive Table
+
+.mt-10 {
+  margin-top: 10px;
+}
+
+
+/*Dx Accordians*/
+.dx-accordion-item-title {
+  border-radius: 8px;
+  background: #efeee9;
+  padding: 0.5rem;
+  padding-left: 1rem;
+  color: #5b7e8c;
+  font-size: 0.875rem;
+}
+
+.dx-accordion-item-title {
+  background: #efeee9;
+}
+
+.dx-accordion-item-title::before {
+  color: rgba(0, 0, 0, 0.38);
+}
+
+.dx-accordion-item-closed {
+  margin-top: 15px;
+}
+
+.dx-item.dx-accordion-item.dx-accordion-item-closed {
+  min-height: 35px;
+}
+
+.dx-accordion-item-title {
+  min-height: 35px;
+}
+
+.container_custom_add_manager .dx-accordion-item-title {
+  min-height: 36px !important;
+  border-radius: 0 !important;
+}
+
+
+
+// .pageWrapper{
+//   padding:0px !important;
+// }
+//.custom-page-wrapper .pageWrapper {
+//padding: 0px !important;
+//}
+
+.risk-form mat-label {
+  font-size: 11px !important;
+}
+
+.risk-form .mdc-button__label {
+  font-size: 16px;
+}
+
+// .risk-form .mat-mdc-select-placeholder {
+//   font-size: 11px;
+// }
+
+.risk-form .mat-mdc-option {
+  font-size: 11px;
+}
+
+// .risk-form .mdc-text-field--no-label:not(.mdc-text-field--textarea) .mat-mdc-form-field-input-control.mdc-text-field__input,
+// .mat-mdc-text-field-wrapper .mat-mdc-form-field-input-control {
+//   font-size: 11px;
+// }
+
+.risk-form .mat-mdc-option.mdc-list-item {
+  font-size: 11px;
+
+}
+
+.risk-form .light-theme .mat-mdc-card>.mat-mdc-card-content {
+  padding: 0px !important;
+}
+
+.risk-form .mat-mdc-card-content:last-child {
+  padding-bottom: 0px !important;
+}
+
+.risk-form .mat-mdc-card-content:first-child {
+  padding-top: 0px !important;
+}
+
+.light-theme .mat-mdc-card-content .risk-form {
+  padding: 0px !important;
+}
+
+.mat-step-icon-state-done {
+  color: #fff !important;
+  background-color: #757575 !important;
+
+}
+
+.bg-grey {
+  background-color: #d0cece;
+}
+
+.bg-red {
+  background-color: #ff5d5d;
+  color: #fff;
+}
+
+.bg-orange {
+  background-color: #f4b083;
+  color: #fff;
+}
+
+.bg-coffe {
+  background-color: #7f6000;
+  color: #fff;
+}
+
+.bg-green {
+  background-color: #c5e0b3;
+}
+
+.bg-light-blue {
+  background-color: #bdd6ee;
+}
+
+.bg-dark-green {
+  background-color: #385623;
+  color: #fff;
+}
+
+legend.fieldset__legend {
+  font-size: 12px;
+  padding: 3px 5px;
+  line-height: 15px;
+  border-radius: 5px;
+}
+
+mat-form-field~.custom-score-lable {
+  margin: 0px !important;
+  margin-top: -20px !important;
+}
+
+.mat-step-label {
+  font-size: 20px !important;
+}
+.mat-mdc-tooltip .mdc-tooltip__surface {
+  background-color: #8ea1d1 !important;
+  color: #000 !important;
+}      
+    
+.mat-mdc-tooltip .mdc-tooltip__surface {
+  background-color: #b5bfdd80 !important;
+  color: #000 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  padding: 6px;
+}
+
+.mdc-text-field--disabled .mat-mdc-select-value-text {
+  color: black !important;
+}
+
+
+.light-theme .mat-mdc-radio-button .mdc-radio .mdc-radio__native-control:enabled:not(:checked) + .mdc-radio__background .mdc-radio__outer-circle {
+  border-color: #0a2842 !important;
+}

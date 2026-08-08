@@ -1,0 +1,63 @@
+<h1 mat-dialog-title>Calculate Dose</h1>
+<div mat-dialog-content>
+    <table>
+        <tr>
+            <th>Full Name</th>
+            <th>Child Name</th>
+            <th>Reading Value</th>
+            <th>Status Name</th>
+            <th>Reading Date</th>
+        </tr>
+        <tr>
+            <td>{{ data.full_name }}</td>
+            <td>{{ data.child_name }}</td>
+            <td>{{ data.reading_value }}</td>
+            <td>{{ data.status_name }}</td>
+            <td>{{ data.reading_date }}</td>
+        </tr>
+    </table>
+</div>
+<div mat-dialog-content>
+    <form [formGroup]="form">
+        <div class="row">
+            <div class="col-md-4">
+                <mat-form-field>
+                    <mat-label>Dose</mat-label>
+                    <input matInput type="number" formControlName="dose_change" step="0.01" />
+                    <mat-error *ngIf="form.get('dose_change')?.hasError('required')">
+                        Dose is required
+                    </mat-error>
+                    <mat-error *ngIf="form.get('dose_change')?.hasError('min')">
+                        Dose must be at least 1
+                    </mat-error>
+                </mat-form-field>
+            </div>
+            <div class="col-md-4">
+                <mat-form-field>
+                    <mat-label>Date Prescribed</mat-label>
+                    <input matInput [matDatepicker]="picker" formControlName="date_prescribed" />
+                    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                    <mat-datepicker #picker></mat-datepicker>
+                    <mat-error *ngIf="form.get('date_prescribed')?.hasError('required')">
+                        Date is required
+                    </mat-error>
+                </mat-form-field>
+            </div>
+            <div class="col-md-4">
+                <mat-form-field>
+                    <mat-label>Comments</mat-label>
+                    <textarea matInput formControlName="comments" rows="1"></textarea>
+                    <mat-error *ngIf="form.get('comments')?.hasError('required')">
+                        Comments are required
+                    </mat-error>
+                </mat-form-field>
+            </div>
+        </div>
+    </form>
+
+    <div mat-dialog-actions>
+        <button mat-flat-button color="primary" [disabled]="form.invalid" class="m-r-8"
+            (click)="onSubmit()">Submit</button>
+        <button mat-flat-button (click)="onClose()" mat-stroked-button color="warn">Close</button>
+    </div>
+</div>
