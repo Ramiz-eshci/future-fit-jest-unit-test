@@ -2,7 +2,7 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { APP_TEST_PROVIDERS, mockCommonService, mockGlobalFlagService } from 'src/app/testing/test-helpers';
+import { APP_TEST_PROVIDERS } from 'src/app/testing/test-helpers';
 
 import { Be03FormComponent } from './be03-form.component';
 
