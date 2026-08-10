@@ -20,7 +20,7 @@ describe('EditTutorialVideosComponent', () => {
             order_by: 1,
           },
         ],
-      })
+      }) as any
     );
 
     await TestBed.configureTestingModule({
@@ -42,7 +42,7 @@ describe('EditTutorialVideosComponent', () => {
             order_by: 1,
           },
         ],
-      })
+      }) as any
     );
 
     fixture = TestBed.createComponent(EditTutorialVideosComponent);
@@ -98,6 +98,7 @@ describe('EditTutorialVideosComponent', () => {
     component.tutorialVideoForm.get('VideoTitle')?.setValue('Intro');
     component.tutorialVideoForm.get('VideoURL')?.setValue('https://youtube.com/watch?v=abc123def45');
     component.tutorialVideoForm.get('OrderBy')?.setValue('1');
+    component.tutorialVideoForm.markAsDirty();
 
     component.onSubmit();
 

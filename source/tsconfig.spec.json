@@ -5,10 +5,9 @@
     "outDir": "./out-tsc/spec",
     "types": [
       "jest",
-      "node"
+      "node",
+      "moment"
     ],
-    "esModuleInterop": true,
-    "emitDecoratorMetadata": true
   },
   "include": [
     "src/**/*.spec.ts",

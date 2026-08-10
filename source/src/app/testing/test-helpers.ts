@@ -119,6 +119,7 @@ export const mockPermissionService = {
 };
 export const mockRolePermissionService = {
   setPermissions: jest.fn(),
+  hasPermission: jest.fn(() => false),
 };
 
 export const APP_TEST_PROVIDERS: Provider[] = [
