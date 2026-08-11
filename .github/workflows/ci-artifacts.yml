@@ -233,3 +233,4 @@ jobs:
             -DbPassword "${{ secrets.DB_PASSWORD }}" `
             -DbBackupDir "${{ secrets.DB_BACKUP_DIR }}" `
             -ApiFilesPath "${{ secrets.API_FILES_PATH }}"
+            
