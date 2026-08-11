@@ -169,9 +169,10 @@ jobs:
           $envPath = Join-Path "${{ env.SITE_PATH }}" ".env"
           $c = Get-Content $envPath -Raw
           $c = $c -replace '(?m)^(ENC_KEY=).*$',  "`${1}${{ secrets.ENC_KEY }}"
+          $c = $c -replace '(?m)^(IV_KEY=).*$',   "`${1}${{ secrets.IV_KEY }}"
           $c = $c -replace '(?m)^(API_HOST=).*$', "`${1}${{ secrets.API_HOST }}"
           $c | Set-Content $envPath -NoNewline -Encoding UTF8
-          Write-Host "Injected ENC_KEY, API_HOST into .env"
+          Write-Host "Injected ENC_KEY, IV_KEY, API_HOST into .env"
 
       - name: Update index.html
         if: matrix.app-path == 'source'
