@@ -20,6 +20,10 @@ Import-Module WebAdministration
 # These are managed manually on the server, not by the pipeline.
 $excludedFiles = @("web.config", ".env")
 
+$excludedDirectories = @(
+    "api"
+)
+
 Write-Host "========================================="
 Write-Host "Starting deployment"
 Write-Host "Application : $AppName"
@@ -74,6 +78,7 @@ Write-Host "App Pool status after stop: $($poolStatus.Value)"
 # =========================================================================
 if ($ClearFirst -and $AppName -eq "source") {
     Write-Host "Clearing existing Angular site files before deploy..."
+    Write-Host "Preserving API directory: api"
 
     # Stash server-managed config files
     $stash = Join-Path $env:TEMP "deploy_stash_$(Get-Date -Format 'yyyyMMddHHmmssfff')"
@@ -81,37 +86,48 @@ if ($ClearFirst -and $AppName -eq "source") {
 
     foreach ($f in $excludedFiles) {
         $src = Join-Path $SitePath $f
+
         if (Test-Path $src) {
             Copy-Item $src -Destination $stash -Force
             Write-Host "Stashed: $f"
         }
     }
 
-    # Clear all site files EXCEPT the server-managed files.
-    # This avoids deleting .env/web.config even temporarily.
+    # Clear Angular files/directories.
+    # IMPORTANT:
+    # - web.config is preserved
+    # - .env is preserved
+    # - api directory is preserved
     Get-ChildItem -Path $SitePath -Force |
         Where-Object {
-            $excludedFiles -notcontains $_.Name
+            ($excludedFiles -notcontains $_.Name) -and
+            ($excludedDirectories -notcontains $_.Name)
         } |
         Remove-Item -Recurse -Force -ErrorAction Stop
 
-    # Restore config files if they were stashed.
+    # Restore config files
     foreach ($f in $excludedFiles) {
         $stashed = Join-Path $stash $f
+
         if (Test-Path $stashed) {
-            Copy-Item $stashed -Destination (Join-Path $SitePath $f) -Force
+            Copy-Item `
+                $stashed `
+                -Destination (Join-Path $SitePath $f) `
+                -Force
+
             Write-Host "Restored: $f"
         }
     }
 
     Remove-Item $stash -Recurse -Force -ErrorAction SilentlyContinue
+
     Write-Host "Angular site folder cleared."
+    Write-Host "API directory was preserved."
 }
 elseif ($AppName -eq "api") {
     Write-Host "API deployment: existing API files will NOT be cleared."
     Write-Host "Existing .env and web.config will be preserved."
 }
-
 # =========================================================================
 # Deploy files
 # =========================================================================
@@ -136,7 +152,14 @@ Write-Host "Deployment destination: $SitePath"
 # IMPORTANT:
 # Do NOT use /MIR here.
 # /MIR can delete files from the IIS destination.
-robocopy $source $SitePath /E /R:2 /W:2 /NFL /NDL /XF $excludedFiles | Out-Null
+# robocopy $source $SitePath /E /R:2 /W:2 /NFL /NDL /XF $excludedFiles | Out-Null
+
+if ($AppName -eq "source") {
+    robocopy $source $SitePath /E /R:2 /W:2 /NFL /NDL /XF $excludedFiles /XD $excludedDirectories | Out-Null
+}
+else {
+    robocopy $source $SitePath /E /R:2 /W:2 /NFL /NDL /XF $excludedFiles | Out-Null
+}
 
 $robocopyExitCode = $LASTEXITCODE
 
