@@ -135,12 +135,22 @@ Write-Host "Deploying files (excluding: $($excludedFiles -join ', '))..."
 
 $source = Join-Path (Get-Location) "publish"
 
-if (-not (Test-Path $source)) {
-    throw "Publish folder not found at: $source"
-}
+# If the API artifact still contains an "api" folder,
+# deploy the CONTENTS of that folder to the API SitePath.
+if ($AppName -eq "api") {
 
-Write-Host "Publish source: $source"
-Write-Host "Deployment destination: $SitePath"
+    $apiSource = Join-Path $source "api"
+
+    if (Test-Path $apiSource) {
+        Write-Host "API artifact contains an 'api' folder."
+        Write-Host "Deploying contents of: $apiSource"
+        $source = $apiSource
+    }
+    else {
+        Write-Host "API artifact is already flattened."
+        Write-Host "Deploying contents of: $source"
+    }
+}
 
 # /E      = copy all subfolders
 # /R:2    = 2 retries
