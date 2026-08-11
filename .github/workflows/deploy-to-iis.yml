@@ -1,0 +1,93 @@
+name: Deploy to IIS
+
+on:
+  workflow_dispatch:
+    inputs:
+      app:
+        description: 'Which app to deploy (api or source)'
+        required: true
+        default: 'api'
+
+jobs:
+  deploy:
+    name: Deploy to IIS
+    runs-on: self-hosted
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set app
+        run: echo "APP=${{ github.event.inputs.app }}" >> $GITHUB_ENV
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ github.event.inputs.app }}-artifact
+          path: publish
+
+      - name: Strip server-managed config from artifact
+        if: always()
+        run: |
+          foreach ($f in @("appsettings.json", "web.config", ".env")) {
+            $p = Join-Path "publish" $f
+            if (Test-Path $p) { Remove-Item $p -Force; Write-Host "Removed $f from publish output." } 
+          }
+        shell: powershell
+
+      - name: Backup IIS + Database
+        shell: powershell
+        run: |
+          powershell -ExecutionPolicy Bypass -File .github/workflows/scripts/backup.ps1 `
+            -SitePath "${{ secrets.IIS_SITE_PATH }}" `
+            -AppPool "${{ secrets.APP_POOL_NAME }}" `
+            -DbServer "${{ secrets.DB_SERVER }}" `
+            -DbName "${{ secrets.DB_NAME }}" `
+            -DbUser "${{ secrets.DB_USER }}" `
+            -DbPassword "${{ secrets.DB_PASSWORD }}" `
+            -DbBackupDir "${{ secrets.DB_BACKUP_DIR }}" `
+            -ApiFilesPath "${{ secrets.API_FILES_PATH }}"
+
+      - name: Deploy
+        shell: powershell
+        run: |
+          powershell -ExecutionPolicy Bypass -File .github/workflows/scripts/deploy.ps1 `
+            -SitePath "${{ secrets.IIS_SITE_PATH }}" `
+            -AppPool "${{ secrets.APP_POOL_NAME }}"
+
+      - name: Verify App Pool
+        shell: powershell
+        run: |
+          Import-Module WebAdministration
+          $poolStatus = Get-WebAppPoolState -Name "${{ secrets.APP_POOL_NAME }}"
+          Write-Host "App Pool Status: $($poolStatus.Value)"
+          if ($poolStatus.Value -ne "Started") { Write-Host "ERROR: App Pool is not running!"; exit 1 }
+
+      - name: Health Check
+        shell: powershell
+        run: |
+          $healthUrl = "${{ secrets.HEALTH_URL }}"
+          $maxAttempts = 5
+          $attempt = 0
+          while ($attempt -lt $maxAttempts) {
+            $attempt++
+            $statusCode = curl.exe -s -o nul -w "%{http_code}" $healthUrl
+            if ($statusCode -eq "200") { Write-Host "Health Check PASSED"; exit 0 }
+            if ($attempt -lt $maxAttempts) { Start-Sleep -Seconds 2 }
+          }
+          Write-Host "Health Check FAILED"; exit 1
+
+      - name: Rollback on Failure
+        if: failure()
+        shell: powershell
+        run: |
+          powershell -ExecutionPolicy Bypass -File .github/workflows/scripts/rollback.ps1 `
+            -SitePath "${{ secrets.IIS_SITE_PATH }}" `
+            -AppPool "${{ secrets.APP_POOL_NAME }}" `
+            -DbServer "${{ secrets.DB_SERVER }}" `
+            -DbName "${{ secrets.DB_NAME }}" `
+            -DbUser "${{ secrets.DB_USER }}" `
+            -DbPassword "${{ secrets.DB_PASSWORD }}" `
+            -DbBackupDir "${{ secrets.DB_BACKUP_DIR }}" `
+            -ApiFilesPath "${{ secrets.API_FILES_PATH }}"

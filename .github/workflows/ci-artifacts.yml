@@ -1,0 +1,216 @@
+name: CI - Build & Artifacts
+
+on:
+  push:
+    branches: [development, "**"]
+  pull_request:
+    branches: [development]
+
+jobs:
+  build:
+    name: Build, Test & Package
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app-path: [api, source]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.app-path }}
+        run: npm ci
+
+      - name: Run lint (if present)
+        working-directory: ${{ matrix.app-path }}
+        run: npm run lint --if-present
+
+      - name: Run tests
+        working-directory: ${{ matrix.app-path }}
+        run: npm test
+      
+      - name: Inject secrets into environment.ts
+        if: matrix.app-path == 'source'
+        env:
+          NG_API_HOST: ${{ secrets.API_HOST }}
+          NG_ENC_KEY: ${{ secrets.ENC_KEY }}
+        run: |
+          node << 'EOF'
+          const fs = require('fs');
+          const file = 'source/src/environments/environment.ts';
+          let c = fs.readFileSync(file, 'utf8');
+          c = c.replace(/^(\s+apiHost:\s*')[^']*(')/m,  (_, a, b) => a + process.env.NG_API_HOST + b);
+          c = c.replace(/(ENCKey:\s*')[^']*(')/,        (_, a, b) => a + process.env.NG_ENC_KEY  + b);
+          fs.writeFileSync(file, c);
+          console.log('Injected API_HOST, ENC_KEY into environment.ts');
+          EOF
+
+      - name: Build (if present)
+        working-directory: ${{ matrix.app-path }}
+        run: npm run build --if-present
+
+      - name: Upload API artifact
+        if: matrix.app-path == 'api'
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-artifact
+          path: |
+            api
+            !api/.env
+
+      - name: Upload Angular artifact
+        if: matrix.app-path == 'source'
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-artifact
+          path: source/dist/Risqed
+
+  deploy:
+    needs: build
+    name: Deploy to IIS
+    runs-on: self-hosted
+    environment: production
+
+    strategy:
+      matrix:
+        app-path: [api, source]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set deployment variables
+        shell: powershell
+        run: |
+          if ("${{ matrix.app-path }}" -eq "api") {
+            "SITE_PATH=${{ secrets.API_SITE_PATH }}" | Out-File -FilePath $env:GITHUB_ENV -Append
+            "APP_POOL=${{ secrets.API_APP_POOL }}" | Out-File -FilePath $env:GITHUB_ENV -Append
+            "HEALTH_URL=${{ secrets.API_HEALTH_URL }}" | Out-File -FilePath $env:GITHUB_ENV -Append
+          }
+          else {
+            "SITE_PATH=${{ secrets.APP_SITE_PATH }}" | Out-File -FilePath $env:GITHUB_ENV -Append
+            "APP_POOL=${{ secrets.APP_APP_POOL }}" | Out-File -FilePath $env:GITHUB_ENV -Append
+          }
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.app-path == 'api' && 'api-artifact' || 'source-artifact' }}
+          path: publish
+
+      - name: Strip server-managed config from artifact
+        if: always()
+        shell: powershell
+        run: |
+          foreach ($f in @("web.config", ".env")) {
+            $p = Join-Path "publish" $f
+            if (Test-Path $p) {
+              Remove-Item $p -Force
+              Write-Host "Removed $f from publish output."
+            }
+          }
+
+      - name: Backup IIS + Database
+        shell: powershell
+        run: |
+          powershell -ExecutionPolicy Bypass -File .github/workflows/scripts/backup.ps1 `
+            -SitePath "${{ env.SITE_PATH }}" `
+            -AppPool "${{ env.APP_POOL }}" `
+            -AppName "${{ matrix.app-path }}" `
+            -DbServer "${{ secrets.DB_SERVER }}" `
+            -DbName "${{ secrets.DB_NAME }}" `
+            -DbUser "${{ secrets.DB_USER }}" `
+            -DbPassword "${{ secrets.DB_PASSWORD }}" `
+            -DbBackupDir "${{ secrets.DB_BACKUP_DIR }}" `
+            -ApiFilesPath "${{ secrets.API_FILES_PATH }}"
+
+      - name: Deploy
+        shell: powershell
+        run: |
+          if ("${{ matrix.app-path }}" -eq "source") {
+            powershell -ExecutionPolicy Bypass -File .github/workflows/scripts/deploy.ps1 `
+              -SitePath "${{ env.SITE_PATH }}" `
+              -AppPool "${{ env.APP_POOL }}" `
+              -ClearFirst
+          } else {
+            powershell -ExecutionPolicy Bypass -File .github/workflows/scripts/deploy.ps1 `
+              -SitePath "${{ env.SITE_PATH }}" `
+              -AppPool "${{ env.APP_POOL }}"
+          }
+      - name: Inject secrets into .env
+        if: matrix.app-path == 'api'
+        shell: powershell
+        run: |
+          $envPath = Join-Path "${{ env.SITE_PATH }}" ".env"
+          $c = Get-Content $envPath -Raw
+          $c = $c -replace '(?m)^(ENC_KEY=).*$',  "`${1}${{ secrets.ENC_KEY }}"
+          $c = $c -replace '(?m)^(API_HOST=).*$', "`${1}${{ secrets.API_HOST }}"
+          $c | Set-Content $envPath -NoNewline -Encoding UTF8
+          Write-Host "Injected ENC_KEY, API_HOST into .env"
+
+      - name: Update index.html
+        if: matrix.app-path == 'source'
+        shell: powershell
+        env:
+          BASE_HREF: ${{ secrets.ANGULAR_BASE_HREF }}
+        run: |
+          powershell -ExecutionPolicy Bypass `
+            -File .github/workflows/scripts/update-index.ps1 `
+            -SitePath "${{ secrets.APP_SITE_PATH }}"
+
+      - name: Verify App Pool
+        shell: powershell
+        run: |
+          Import-Module WebAdministration
+          $poolStatus = Get-WebAppPoolState -Name "${{ env.APP_POOL }}"
+          Write-Host "App Pool Status: $($poolStatus.Value)"
+          if ($poolStatus.Value -ne "Started") {
+            Write-Host "ERROR: App Pool is not running!"
+            exit 1
+          }
+
+      - name: Health Check
+        if: matrix.app-path == 'api'
+        shell: powershell
+        run: |
+          $healthUrl = "${{ env.HEALTH_URL }}"
+          $maxAttempts = 5
+          $attempt = 0
+
+          while ($attempt -lt $maxAttempts) {
+            $attempt++
+            $statusCode = curl.exe -s -o nul -w "%{http_code}" $healthUrl
+
+            if ($statusCode -eq "200") {
+              Write-Host "Health Check PASSED"
+              exit 0
+            }
+
+            if ($attempt -lt $maxAttempts) {
+              Start-Sleep -Seconds 2
+            }
+          }
+
+          Write-Host "Health Check FAILED"
+          exit 1
+
+      - name: Rollback on Failure
+        if: failure()
+        shell: powershell
+        run: |
+          powershell -ExecutionPolicy Bypass -File .github/workflows/scripts/rollback.ps1 `
+            -SitePath "${{ env.SITE_PATH }}" `
+            -AppPool "${{ env.APP_POOL }}" `
+            -AppName "${{ matrix.app-path }}" `
+            -DbServer "${{ secrets.DB_SERVER }}" `
+            -DbName "${{ secrets.DB_NAME }}" `
+            -DbUser "${{ secrets.DB_USER }}" `
+            -DbPassword "${{ secrets.DB_PASSWORD }}" `
+            -DbBackupDir "${{ secrets.DB_BACKUP_DIR }}" `
+            -ApiFilesPath "${{ secrets.API_FILES_PATH }}"
