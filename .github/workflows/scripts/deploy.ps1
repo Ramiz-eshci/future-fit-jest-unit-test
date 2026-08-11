@@ -10,7 +10,7 @@ Import-Module WebAdministration
 
 # Files that must NEVER be overwritten on the IIS server.
 # These are managed manually on the server, not by the pipeline.
-$excludedFiles = @("web.config")
+$excludedFiles = @("web.config", ".env")
 
 # =========================================================================
 # Stop App Pool (idempotent - backup.ps1 may have already stopped it)
