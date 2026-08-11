@@ -18,7 +18,7 @@
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "allowedCommonJsDependencies": ["apexcharts", "bezier-easing", "moment"],
-            "outputPath": "dist/Matdash",
+            "outputPath": "dist/FutureFit",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": ["zone.js"],

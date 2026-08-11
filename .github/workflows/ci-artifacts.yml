@@ -88,7 +88,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: source-artifact
-          path: source/dist/Risqed
+          path: source/dist/FutureFit
 
   deploy:
     needs: build
