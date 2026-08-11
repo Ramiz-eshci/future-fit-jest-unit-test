@@ -56,13 +56,38 @@ $timestamp = Get-Date -Format "yyyyMMddHHmmss"
 $backupZip = "$ApiFilesPath\backup_${AppName}_$timestamp.zip"
 $tempCopy  = "$ApiFilesPath\_backup_temp"
 
+if (-not $ApiFilesPath) {
+    throw "ApiFilesPath was not provided - it's required as the destination for the backup zip and temp copy."
+}
+
+if (-not (Test-Path $ApiFilesPath)) {
+    Write-Host "ApiFilesPath does not exist yet, creating: $ApiFilesPath"
+    New-Item -ItemType Directory -Path $ApiFilesPath -Force | Out-Null
+}
+
 if (Test-Path $tempCopy) {
     Remove-Item $tempCopy -Recurse -Force
 }
 
+if (-not (Test-Path $SitePath)) {
+    throw "SitePath not found or not reachable from this runner: '$SitePath'"
+}
+
 Write-Host "Creating temp backup copy..."
 # robocopy $SitePath $tempCopy /E /R:1 /W:1 /XF *.log /NFL /NDL | Out-Null
-robocopy $SitePath $tempCopy /E /R:1 /W:1 /XF *.log /XD node_modules /NFL /NDL | Out-Null
+$robocopyOutput = robocopy $SitePath $tempCopy /E /R:1 /W:1 /XF *.log /XD node_modules /NFL /NDL
+$robocopyExit = $LASTEXITCODE
+
+# robocopy exit codes: 0-7 = success (files copied or nothing to do), 8+ = failure
+if ($robocopyExit -ge 8) {
+    Write-Host "Robocopy output:"
+    Write-Host ($robocopyOutput -join "`n")
+    throw "robocopy FAILED copying '$SitePath' -> '$tempCopy' (exit code $robocopyExit). Check that SitePath is correct/reachable and that ApiFilesPath ('$ApiFilesPath') exists and is writable by the runner."
+}
+
+if (-not (Test-Path $tempCopy)) {
+    throw "robocopy reported success (exit code $robocopyExit) but '$tempCopy' was not created. Check ApiFilesPath ('$ApiFilesPath') is a valid, writable location."
+}
 
 Write-Host "Creating zip archive..."
 Add-Type -AssemblyName System.IO.Compression.FileSystem
