@@ -1,7 +1,15 @@
 param (
+  [Parameter(Mandatory = $true)]
   [string]$SitePath,
+
+  [Parameter(Mandatory = $true)]
   [string]$AppPool,
-  [switch]$ClearFirst 
+
+  [Parameter(Mandatory = $true)]
+  [ValidateSet("api", "source")]
+  [string]$AppName,
+
+  [switch]$ClearFirst
 )
 
 $ErrorActionPreference = "Stop"
@@ -11,6 +19,32 @@ Import-Module WebAdministration
 # Files that must NEVER be overwritten on the IIS server.
 # These are managed manually on the server, not by the pipeline.
 $excludedFiles = @("web.config", ".env")
+
+Write-Host "========================================="
+Write-Host "Starting deployment"
+Write-Host "Application : $AppName"
+Write-Host "Site Path   : $SitePath"
+Write-Host "App Pool    : $AppPool"
+Write-Host "Clear First : $ClearFirst"
+Write-Host "========================================="
+
+# =========================================================================
+# Safety checks
+# =========================================================================
+
+if (-not (Test-Path $SitePath)) {
+    throw "Site path not found: $SitePath"
+}
+
+# API must NEVER be cleared.
+if ($AppName -eq "api" -and $ClearFirst) {
+    throw "Safety check failed: -ClearFirst is not allowed for API deployment."
+}
+
+# ClearFirst is intended only for Angular/source.
+if ($ClearFirst -and $AppName -ne "source") {
+    throw "Safety check failed: -ClearFirst can only be used for source deployment."
+}
 
 # =========================================================================
 # Stop App Pool (idempotent - backup.ps1 may have already stopped it)
@@ -25,7 +59,7 @@ if ($poolState -and $poolState.Value -eq "Started") {
     if ($poolState) {
         Write-Host "App Pool already in state: $($poolState.Value) - skipping stop."
     } else {
-        Write-Host "App Pool '$AppPool' not found - skipping stop."
+        throw "App Pool '$AppPool' was not found."
     }
 }
 
@@ -33,13 +67,16 @@ $poolStatus = Get-WebAppPoolState -Name $AppPool
 Write-Host "App Pool status after stop: $($poolStatus.Value)"
 
 # =========================================================================
-# Clear existing build (Angular/source only)
+# Clear existing build (Angular/source ONLY)
+#
+# IMPORTANT:
+# API deployment never enters this block.
 # =========================================================================
-if ($ClearFirst) {
-    Write-Host "Clearing existing site files before deploy..."
+if ($ClearFirst -and $AppName -eq "source") {
+    Write-Host "Clearing existing Angular site files before deploy..."
 
     # Stash server-managed config files
-    $stash = Join-Path $env:TEMP "deploy_stash_$(Get-Date -Format 'yyyyMMddHHmmss')"
+    $stash = Join-Path $env:TEMP "deploy_stash_$(Get-Date -Format 'yyyyMMddHHmmssfff')"
     New-Item -ItemType Directory -Path $stash -Force | Out-Null
 
     foreach ($f in $excludedFiles) {
@@ -50,11 +87,15 @@ if ($ClearFirst) {
         }
     }
 
-    # Clear all site files
+    # Clear all site files EXCEPT the server-managed files.
+    # This avoids deleting .env/web.config even temporarily.
     Get-ChildItem -Path $SitePath -Force |
-        Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+        Where-Object {
+            $excludedFiles -notcontains $_.Name
+        } |
+        Remove-Item -Recurse -Force -ErrorAction Stop
 
-    # Restore config files
+    # Restore config files if they were stashed.
     foreach ($f in $excludedFiles) {
         $stashed = Join-Path $stash $f
         if (Test-Path $stashed) {
@@ -62,8 +103,13 @@ if ($ClearFirst) {
             Write-Host "Restored: $f"
         }
     }
+
     Remove-Item $stash -Recurse -Force -ErrorAction SilentlyContinue
-    Write-Host "Site folder cleared."
+    Write-Host "Angular site folder cleared."
+}
+elseif ($AppName -eq "api") {
+    Write-Host "API deployment: existing API files will NOT be cleared."
+    Write-Host "Existing .env and web.config will be preserved."
 }
 
 # =========================================================================
@@ -77,23 +123,54 @@ if (-not (Test-Path $source)) {
     throw "Publish folder not found at: $source"
 }
 
-# robocopy /E = all subfolders (incl. empty), /XF = exclude files by name
-# /R:2 /W:2 = 2 retries, 2s wait. /NFL /NDL = quieter log.
+Write-Host "Publish source: $source"
+Write-Host "Deployment destination: $SitePath"
+
+# /E      = copy all subfolders
+# /R:2    = 2 retries
+# /W:2    = 2 seconds between retries
+# /NFL    = no file list
+# /NDL    = no directory list
+# /XF     = exclude server-managed files
+#
+# IMPORTANT:
+# Do NOT use /MIR here.
+# /MIR can delete files from the IIS destination.
 robocopy $source $SitePath /E /R:2 /W:2 /NFL /NDL /XF $excludedFiles | Out-Null
 
+$robocopyExitCode = $LASTEXITCODE
+
 # robocopy exit codes: 0-7 = success (8+ = failure)
-if ($LASTEXITCODE -ge 8) {
-    throw "File deployment FAILED (robocopy exit code $LASTEXITCODE)."
+if ($robocopyExitCode -ge 8) {
+    throw "File deployment FAILED (robocopy exit code $robocopyExitCode)."
 }
 
-Write-Host "Files deployed successfully (robocopy exit code $LASTEXITCODE)"
+Write-Host "Files deployed successfully (robocopy exit code $robocopyExitCode)."
 
-# Safety check: warn if the server is missing config that was never deployed
+# =========================================================================
+# Verify deployment
+# =========================================================================
+
+$deployedFiles = Get-ChildItem -Path $SitePath -Recurse -File -Force |
+    Where-Object {
+        $excludedFiles -notcontains $_.Name
+    }
+
+if (-not $deployedFiles) {
+    throw "Deployment verification failed: no application files were found in $SitePath."
+}
+
+Write-Host "Deployment verification passed. Application files found: $($deployedFiles.Count)"
+
+# =========================================================================
+# Safety check: server-managed config files
+# =========================================================================
 foreach ($f in $excludedFiles) {
     $target = Join-Path $SitePath $f
+
     if (-not (Test-Path $target)) {
-        Write-Host "WARNING: $f does not exist at $target. The app may fail to start."
-        Write-Host "         Create it manually on the server (it is intentionally not deployed)."
+        Write-Host "WARNING: $f does not exist at $target."
+        Write-Host "         The pipeline intentionally does not deploy this file."
     } else {
         Write-Host "Preserved existing: $f"
     }
@@ -116,6 +193,11 @@ $poolStatus = Get-WebAppPoolState -Name $AppPool
 Write-Host "App Pool status after start: $($poolStatus.Value)"
 
 if ($poolStatus.Value -ne "Started") {
-  Write-Host "ERROR: App Pool failed to start!"
-  exit 1
+    Write-Host "ERROR: App Pool failed to start!"
+    exit 1
 }
+
+Write-Host "========================================="
+Write-Host "Deployment completed successfully"
+Write-Host "Application : $AppName"
+Write-Host "========================================="

@@ -7,14 +7,20 @@ on:
     branches: [development]
 
 jobs:
+
+  # ============================================================
+  # BUILD
+  # ============================================================
   build:
     name: Build, Test & Package
     runs-on: ubuntu-latest
+
     strategy:
       matrix:
         app-path: [api, source]
 
     steps:
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -30,66 +36,62 @@ jobs:
       - name: Run lint (if present)
         working-directory: ${{ matrix.app-path }}
         run: npm run lint --if-present
-      
-      - name: Create environment.ts
-        if: matrix.app-path == 'source'
-        env:
-          NG_API_HOST: ${{ secrets.API_HOST }}
-          NG_ENC_KEY: ${{ secrets.ENC_KEY }}
-        run: |
-          mkdir -p source/src/environments
-
-          cat > source/src/environments/environment.ts <<EOF
-          export const environment = {
-            production: true,
-            apiHost: '${NG_API_HOST}',
-            ENCKey: '${NG_ENC_KEY}',
-          };
-          EOF
-
-          echo "environment.ts created successfully"
-
 
       - name: Run tests
         working-directory: ${{ matrix.app-path }}
         run: npm test
-      
-      - name: Inject secrets into environment.ts
-        if: matrix.app-path == 'source'
-        env:
-          NG_API_HOST: ${{ secrets.API_HOST }}
-          NG_ENC_KEY: ${{ secrets.ENC_KEY }}
-        run: |
-          node << 'EOF'
-          const fs = require('fs');
-          const file = 'source/src/environments/environment.ts';
-          let c = fs.readFileSync(file, 'utf8');
-          c = c.replace(/^(\s+apiHost:\s*')[^']*(')/m,  (_, a, b) => a + process.env.NG_API_HOST + b);
-          c = c.replace(/(ENCKey:\s*')[^']*(')/,        (_, a, b) => a + process.env.NG_ENC_KEY  + b);
-          fs.writeFileSync(file, c);
-          console.log('Injected API_HOST, ENC_KEY into environment.ts');
-          EOF
 
       - name: Build (if present)
         working-directory: ${{ matrix.app-path }}
         run: npm run build --if-present
+
+      # ==========================================================
+      # API ARTIFACT
+      # ==========================================================
+      # Important:
+      # - .env is not uploaded.
+      # - node_modules is not uploaded.
+      # - The CONTENTS of api are uploaded, not the api folder itself.
+      # ==========================================================
+      - name: Prepare API deployment artifact
+        if: matrix.app-path == 'api'
+        shell: bash
+        run: |
+          rm -rf api-publish
+          mkdir -p api-publish
+
+          rsync -a \
+            --exclude='.env' \
+            --exclude='node_modules/' \
+            api/ \
+            api-publish/
+
+          echo "API artifact contents:"
+          find api-publish -maxdepth 2 -type f | sort
 
       - name: Upload API artifact
         if: matrix.app-path == 'api'
         uses: actions/upload-artifact@v4
         with:
           name: api-artifact
-          path: |
-            api
-            !api/.env
+          path: api-publish/
+          if-no-files-found: error
 
+      # ==========================================================
+      # ANGULAR ARTIFACT
+      # ==========================================================
       - name: Upload Angular artifact
         if: matrix.app-path == 'source'
         uses: actions/upload-artifact@v4
         with:
           name: source-artifact
           path: source/dist/FutureFit
+          if-no-files-found: error
 
+
+  # ============================================================
+  # DEPLOY
+  # ============================================================
   deploy:
     needs: build
     name: Deploy to IIS
@@ -101,47 +103,84 @@ jobs:
         app-path: [api, source]
 
     steps:
+
       - name: Checkout
         uses: actions/checkout@v4
 
+      # ----------------------------------------------------------
+      # Deployment variables
+      # ----------------------------------------------------------
       - name: Set deployment variables
         shell: powershell
         run: |
           if ("${{ matrix.app-path }}" -eq "api") {
-            "SITE_PATH=${{ secrets.API_SITE_PATH }}" | Out-File -FilePath $env:GITHUB_ENV -Append
-            "APP_POOL=${{ secrets.API_APP_POOL }}" | Out-File -FilePath $env:GITHUB_ENV -Append
-            "HEALTH_URL=${{ secrets.API_HEALTH_URL }}" | Out-File -FilePath $env:GITHUB_ENV -Append
+            "SITE_PATH=${{ secrets.API_SITE_PATH }}" |
+              Out-File -FilePath $env:GITHUB_ENV -Append
+
+            "APP_POOL=${{ secrets.API_APP_POOL }}" |
+              Out-File -FilePath $env:GITHUB_ENV -Append
+
+            "HEALTH_URL=${{ secrets.API_HEALTH_URL }}" |
+              Out-File -FilePath $env:GITHUB_ENV -Append
           }
           else {
-            "SITE_PATH=${{ secrets.APP_SITE_PATH }}" | Out-File -FilePath $env:GITHUB_ENV -Append
-            "APP_POOL=${{ secrets.APP_APP_POOL }}" | Out-File -FilePath $env:GITHUB_ENV -Append
+            "SITE_PATH=${{ secrets.APP_SITE_PATH }}" |
+              Out-File -FilePath $env:GITHUB_ENV -Append
+
+            "APP_POOL=${{ secrets.APP_APP_POOL }}" |
+              Out-File -FilePath $env:GITHUB_ENV -Append
           }
 
+      # ----------------------------------------------------------
+      # Download correct artifact
+      # ----------------------------------------------------------
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.app-path == 'api' && 'api-artifact' || 'source-artifact' }}
           path: publish
 
-      - name: Strip server-managed config from artifact
-        if: always()
+      # ----------------------------------------------------------
+      # Verify artifact
+      # ----------------------------------------------------------
+      - name: Verify downloaded artifact
+        shell: powershell
+        run: |
+          if (-not (Test-Path "publish")) {
+            throw "Publish folder was not created."
+          }
+
+          Write-Host "Downloaded artifact:"
+          Get-ChildItem -Path "publish" -Force -Recurse |
+            Select-Object FullName, Length |
+            Format-Table -AutoSize
+
+      # ----------------------------------------------------------
+      # Remove server-managed files if they somehow exist
+      # ----------------------------------------------------------
+      - name: Strip server-managed files from artifact
         shell: powershell
         run: |
           foreach ($f in @("web.config", ".env")) {
             $p = Join-Path "publish" $f
+
             if (Test-Path $p) {
               Remove-Item $p -Force
               Write-Host "Removed $f from publish output."
             }
           }
 
+      # ----------------------------------------------------------
+      # Backup
+      # ----------------------------------------------------------
       - name: Backup IIS + Database
         shell: powershell
         run: |
-          powershell -ExecutionPolicy Bypass -File .github/workflows/scripts/backup.ps1 `
+          powershell `
+            -ExecutionPolicy Bypass `
+            -File .github/workflows/scripts/backup.ps1 `
             -SitePath "${{ env.SITE_PATH }}" `
             -AppPool "${{ env.APP_POOL }}" `
-            -AppName "${{ matrix.app-path }}" `
             -DbServer "${{ secrets.DB_SERVER }}" `
             -DbName "${{ secrets.DB_NAME }}" `
             -DbUser "${{ secrets.DB_USER }}" `
@@ -149,63 +188,93 @@ jobs:
             -DbBackupDir "${{ secrets.DB_BACKUP_DIR }}" `
             -ApiFilesPath "${{ secrets.API_FILES_PATH }}"
 
+      # ----------------------------------------------------------
+      # Deploy
+      # ----------------------------------------------------------
       - name: Deploy
         shell: powershell
         run: |
           if ("${{ matrix.app-path }}" -eq "source") {
-            powershell -ExecutionPolicy Bypass -File .github/workflows/scripts/deploy.ps1 `
+            Write-Host "Deploying Angular application..."
+
+            powershell `
+              -ExecutionPolicy Bypass `
+              -File .github/workflows/scripts/deploy.ps1 `
               -SitePath "${{ env.SITE_PATH }}" `
               -AppPool "${{ env.APP_POOL }}" `
+              -AppName "source" `
               -ClearFirst
-          } else {
-            powershell -ExecutionPolicy Bypass -File .github/workflows/scripts/deploy.ps1 `
-              -SitePath "${{ env.SITE_PATH }}" `
-              -AppPool "${{ env.APP_POOL }}"
           }
-      - name: Inject secrets into .env
+          else {
+            Write-Host "Deploying Node.js API..."
+            Write-Host "API deployment will NOT clear the existing API folder."
+
+            powershell `
+              -ExecutionPolicy Bypass `
+              -File .github/workflows/scripts/deploy.ps1 `
+              -SitePath "${{ env.SITE_PATH }}" `
+              -AppPool "${{ env.APP_POOL }}" `
+              -AppName "api"
+          }
+
+      # ----------------------------------------------------------
+      # API .env
+      # ----------------------------------------------------------
+      - name: Verify API .env
         if: matrix.app-path == 'api'
         shell: powershell
         run: |
           $envPath = Join-Path "${{ env.SITE_PATH }}" ".env"
-          $c = Get-Content $envPath -Raw
-          $c = $c -replace '(?m)^(ENC_KEY=).*$',  "`${1}${{ secrets.ENC_KEY }}"
-          $c = $c -replace '(?m)^(IV_KEY=).*$',   "`${1}${{ secrets.IV_KEY }}"
-          $c = $c -replace '(?m)^(API_HOST=).*$', "`${1}${{ secrets.API_HOST }}"
-          $c | Set-Content $envPath -NoNewline -Encoding UTF8
-          Write-Host "Injected ENC_KEY, IV_KEY, API_HOST into .env"
 
-      - name: Update index.html
-        if: matrix.app-path == 'source'
-        shell: powershell
-        env:
-          BASE_HREF: ${{ secrets.ANGULAR_BASE_HREF }}
-        run: |
-          powershell -ExecutionPolicy Bypass `
-            -File .github/workflows/scripts/update-index.ps1 `
-            -SitePath "${{ secrets.APP_SITE_PATH }}"
+          if (-not (Test-Path $envPath)) {
+            throw ".env was not found at $envPath. Deployment stopped."
+          }
 
+          Write-Host ".env exists and was preserved."
+
+      # ----------------------------------------------------------
+      # Verify App Pool
+      # ----------------------------------------------------------
       - name: Verify App Pool
         shell: powershell
         run: |
           Import-Module WebAdministration
+
           $poolStatus = Get-WebAppPoolState -Name "${{ env.APP_POOL }}"
+
           Write-Host "App Pool Status: $($poolStatus.Value)"
+
           if ($poolStatus.Value -ne "Started") {
             Write-Host "ERROR: App Pool is not running!"
             exit 1
           }
 
+      # ----------------------------------------------------------
+      # API health check
+      # ----------------------------------------------------------
       - name: Health Check
         if: matrix.app-path == 'api'
         shell: powershell
         run: |
           $healthUrl = "${{ env.HEALTH_URL }}"
-          $maxAttempts = 5
-          $attempt = 0
 
-          while ($attempt -lt $maxAttempts) {
-            $attempt++
-            $statusCode = curl.exe -s -o nul -w "%{http_code}" $healthUrl
+          if ([string]::IsNullOrWhiteSpace($healthUrl)) {
+            Write-Host "HEALTH_URL is not configured. Skipping health check."
+            exit 0
+          }
+
+          $maxAttempts = 5
+
+          for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+            Write-Host "Health check attempt $attempt/$maxAttempts"
+
+            $statusCode = curl.exe `
+              -s `
+              -o nul `
+              -w "%{http_code}" `
+              $healthUrl
+
+            Write-Host "HTTP status: $statusCode"
 
             if ($statusCode -eq "200") {
               Write-Host "Health Check PASSED"
@@ -217,21 +286,27 @@ jobs:
             }
           }
 
-          Write-Host "Health Check FAILED"
-          exit 1
+          throw "Health Check FAILED."
 
+      # ----------------------------------------------------------
+      # Rollback
+      # ----------------------------------------------------------
       - name: Rollback on Failure
         if: failure()
         shell: powershell
         run: |
-          powershell -ExecutionPolicy Bypass -File .github/workflows/scripts/rollback.ps1 `
+          Write-Host "Deployment failed. Starting rollback..."
+
+          powershell `
+            -ExecutionPolicy Bypass `
+            -File .github/workflows/scripts/rollback.ps1 `
             -SitePath "${{ env.SITE_PATH }}" `
             -AppPool "${{ env.APP_POOL }}" `
-            -AppName "${{ matrix.app-path }}" `
             -DbServer "${{ secrets.DB_SERVER }}" `
             -DbName "${{ secrets.DB_NAME }}" `
             -DbUser "${{ secrets.DB_USER }}" `
             -DbPassword "${{ secrets.DB_PASSWORD }}" `
             -DbBackupDir "${{ secrets.DB_BACKUP_DIR }}" `
             -ApiFilesPath "${{ secrets.API_FILES_PATH }}"
-            
+
+          Write-Host "Rollback completed."
