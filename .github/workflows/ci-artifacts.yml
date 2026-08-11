@@ -166,39 +166,12 @@ jobs:
         if: matrix.app-path == 'api'
         shell: powershell
         run: |
-          $sitePath = "${{ env.SITE_PATH }}"
-          $envPath = Join-Path $sitePath ".env"
-
-          Write-Host "===================================="
-          Write-Host "SITE_PATH: $sitePath"
-          Write-Host "ENV_PATH: $envPath"
-          Write-Host "===================================="
-
-          if (Test-Path $sitePath) {
-              Write-Host "SITE_PATH exists: YES"
-          }
-          else {
-              Write-Host "SITE_PATH exists: NO"
-              exit 1
-          }
-
-          if (Test-Path $envPath) {
-              Write-Host ".env exists: YES"
-              $c = Get-Content $envPath -Raw
-          }
-          else {
-              Write-Host ".env exists: NO - creating a fresh one (first deploy or file was missing on server)."
-              # Seed with the keys this step manages. Add any other required
-              # keys here so a from-scratch .env still has everything the app needs.
-              $c = "ENC_KEY=`nIV_KEY=`nAPI_HOST=`n"
-          }
-
-          if ($c -match '(?m)^ENC_KEY=.*$')  { $c = $c -replace '(?m)^(ENC_KEY=).*$',  "`${1}${{ secrets.ENC_KEY }}" }  else { $c += "`nENC_KEY=${{ secrets.ENC_KEY }}" }
-          if ($c -match '(?m)^IV_KEY=.*$')   { $c = $c -replace '(?m)^(IV_KEY=).*$',   "`${1}${{ secrets.IV_KEY }}" }   else { $c += "`nIV_KEY=${{ secrets.IV_KEY }}" }
-          if ($c -match '(?m)^API_HOST=.*$') { $c = $c -replace '(?m)^(API_HOST=).*$', "`${1}${{ secrets.API_HOST }}" } else { $c += "`nAPI_HOST=${{ secrets.API_HOST }}" }
-
+          $envPath = Join-Path "${{ env.SITE_PATH }}" ".env"
+          $c = Get-Content $envPath -Raw
+          $c = $c -replace '(?m)^(ENC_KEY=).*$',  "`${1}${{ secrets.ENC_KEY }}"
+          $c = $c -replace '(?m)^(IV_KEY=).*$',   "`${1}${{ secrets.IV_KEY }}"
+          $c = $c -replace '(?m)^(API_HOST=).*$', "`${1}${{ secrets.API_HOST }}"
           $c | Set-Content $envPath -NoNewline -Encoding UTF8
-
           Write-Host "Injected ENC_KEY, IV_KEY, API_HOST into .env"
 
       - name: Update index.html
