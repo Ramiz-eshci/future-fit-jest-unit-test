@@ -31,6 +31,19 @@ jobs:
         working-directory: ${{ matrix.app-path }}
         run: npm run lint --if-present
 
+      - name: Create environment.ts
+        shell: powershell
+        run: |
+          $environmentContent = @"
+          export const environment = {
+            production: true,
+            apiHost: '${{ secrets.API_URL }}',
+            ENCKey: '${{ secrets.ENC_KEY }}',
+          };
+          "@
+
+          Set-Content -Path "src/environments/environment.ts" -Value $environmentContent
+
       - name: Run tests
         working-directory: ${{ matrix.app-path }}
         run: npm test
