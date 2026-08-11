@@ -30,19 +30,25 @@ jobs:
       - name: Run lint (if present)
         working-directory: ${{ matrix.app-path }}
         run: npm run lint --if-present
-
+      
       - name: Create environment.ts
-        shell: powershell
+        if: matrix.app-path == 'source'
+        env:
+          NG_API_HOST: ${{ secrets.API_HOST }}
+          NG_ENC_KEY: ${{ secrets.ENC_KEY }}
         run: |
-          $environmentContent = @"
+          mkdir -p source/src/environments
+
+          cat > source/src/environments/environment.ts <<EOF
           export const environment = {
             production: true,
-            apiHost: '${{ secrets.API_URL }}',
-            ENCKey: '${{ secrets.ENC_KEY }}',
+            apiHost: '${NG_API_HOST}',
+            ENCKey: '${NG_ENC_KEY}',
           };
-          "@
+          EOF
 
-          Set-Content -Path "src/environments/environment.ts" -Value $environmentContent
+          echo "environment.ts created successfully"
+
 
       - name: Run tests
         working-directory: ${{ matrix.app-path }}
