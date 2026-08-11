@@ -196,12 +196,12 @@ const commonSQLServer = {
       search.field.forEach(function (e, i) {
         const safeSearchField = assertSafeColumn(e, 'search field');
         const param = addParam(values, `%${search.value}%`);
-        search_query += `(LOWER(${safeSearchField}) LIKE ${param})`;
+        search_query += `(${safeSearchField} LIKE ${param})`;
         if ((i + 1) !== search.field.length) {
           search_query += ' OR ';
         }
       });
-      query += ` AND ${search_query}`;
+      query += ` AND (${search_query})`;
     }
     if (GroupBy) {
       query += ` GROUP BY ${assertSafeGroupBy(GroupBy)}`;

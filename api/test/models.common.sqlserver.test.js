@@ -57,7 +57,7 @@ describe('common.sqlserver', () => {
       await Common.get_info(0, 'tbl_user', 'is_deleted', '', '*', search, [], false, orderBy);
       const [sql, values] = db.query.mock.calls[0];
       expect(sql).toContain('SELECT * FROM tbl_user');
-      expect(sql).toContain('LOWER(name) LIKE @param2');
+      expect(sql).toContain('((name LIKE @param2))');
       expect(sql).toContain('ORDER BY name ASC');
       expect(values).toEqual([0, '%bob%']);
     });
