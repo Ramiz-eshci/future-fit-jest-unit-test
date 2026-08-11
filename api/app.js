@@ -169,4 +169,10 @@ app.use('/api/role', require('./routes/role.routes'))
 app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/assets', express.static(path.join(__dirname, 'templates/assets')));
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'OK',
+        message: 'Server is running'
+    });
+});
 app.get('/*', (request, response) => response.sendFile(path.join(__dirname, 'public/index.html')))
