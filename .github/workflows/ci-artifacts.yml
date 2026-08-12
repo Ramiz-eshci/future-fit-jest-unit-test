@@ -241,6 +241,11 @@ jobs:
       - name: Verify API .env
         if: matrix.app-path == 'api'
         shell: powershell
+        env:
+          API_PORT_SECRET: ${{ secrets.API_PORT }}
+          JWT_KEY_SECRET: ${{ secrets.JWT_KEY }}
+          SESSION_KEY_SECRET: ${{ secrets.SESSION_KEY }}
+          ENC_KEY_SECRET: ${{ secrets.ENC_KEY }}
         run: |
           $envPath = Join-Path "${{ env.SITE_PATH }}" ".env"
 
@@ -248,8 +253,10 @@ jobs:
             throw ".env was not found at $envPath. Deployment stopped."
           }
           $c = Get-Content $envPath -Raw
-          $c = $c -replace '(?m)^(PORT=).*$',  "`${1}${{ secrets.API_PORT }}"
-          $c = $c -replace '(?m)^(ENC_KEY=).*$',   "`${1}${{ secrets.ENC_KEY }}"
+          $c = $c -replace '(?m)^(PORT=).*$',  "`${1}${{ secrets.API_PORT_SECRET }}"
+          $c = $c -replace '(?m)^(ENC_KEY=).*$', ('${1}' + $env:ENC_KEY_SECRET)
+          $c = $c -replace '(?m)^(SESSION_KEY=).*$', ('${1}' + $env:SESSION_KEY_SECRET)
+          $c = $c -replace '(?m)^(JWT_KEY=).*$', ('${1}' + $env:JWT_KEY_SECRET)
           $c | Set-Content $envPath -NoNewline -Encoding UTF8
           Write-Host ".env exists and was preserved."
           Write-Host "Injected ENC_KEY, IV_KEY, API_HOST into .env"
