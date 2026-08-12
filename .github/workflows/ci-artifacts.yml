@@ -247,8 +247,12 @@ jobs:
           if (-not (Test-Path $envPath)) {
             throw ".env was not found at $envPath. Deployment stopped."
           }
-
+          $c = Get-Content $envPath -Raw
+          $c = $c -replace '(?m)^(PORT=).*$',  "`${1}${{ secrets.API_PORT }}"
+          $c = $c -replace '(?m)^(ENC_KEY=).*$',   "`${1}${{ secrets.ENC_KEY }}"
+          $c | Set-Content $envPath -NoNewline -Encoding UTF8
           Write-Host ".env exists and was preserved."
+          Write-Host "Injected ENC_KEY, IV_KEY, API_HOST into .env"
 
       # ----------------------------------------------------------
       # Verify App Pool
