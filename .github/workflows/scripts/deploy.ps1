@@ -181,6 +181,37 @@ if ($robocopyExitCode -ge 8) {
 Write-Host "Files deployed successfully (robocopy exit code $robocopyExitCode)."
 
 # =========================================================================
+# Install API dependencies
+#
+# node_modules is intentionally excluded from the artifact (see
+# ci-artifacts.yml), so it must be installed here, directly in $SitePath,
+# using the package.json/package-lock.json that were just deployed.
+#
+# This MUST run before the app pool is started back up.
+# =========================================================================
+if ($AppName -eq "api") {
+    Write-Host "Installing API dependencies (npm ci) in $SitePath ..."
+
+    $packageJson = Join-Path $SitePath "package.json"
+    if (-not (Test-Path $packageJson)) {
+        throw "package.json not found at $packageJson - cannot install API dependencies."
+    }
+
+    Push-Location $SitePath
+    try {
+        npm ci --omit=dev
+        if ($LASTEXITCODE -ne 0) {
+            throw "npm ci failed in $SitePath (exit code $LASTEXITCODE)."
+        }
+    }
+    finally {
+        Pop-Location
+    }
+
+    Write-Host "API dependencies installed successfully."
+}
+
+# =========================================================================
 # Verify deployment
 # =========================================================================
 

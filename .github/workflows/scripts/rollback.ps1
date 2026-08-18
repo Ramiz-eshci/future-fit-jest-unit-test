@@ -91,6 +91,34 @@ Remove-Item $configStash -Recurse -Force -ErrorAction SilentlyContinue
 
 Write-Host "File restoration complete." -ForegroundColor Green
 
+# =========================================================================
+# Restore API dependencies
+#
+# backup.ps1 excludes node_modules from the backup zip (-XD node_modules),
+# so it must be reinstalled here before the app pool is started back up.
+# =========================================================================
+if ($AppName -eq "api") {
+    Write-Host "Installing API dependencies (npm ci) in $SitePath ..." -ForegroundColor Cyan
+
+    $packageJson = Join-Path $SitePath "package.json"
+    if (Test-Path $packageJson) {
+        Push-Location $SitePath
+        try {
+            npm ci --omit=dev
+            if ($LASTEXITCODE -ne 0) {
+                Write-Host "WARNING: npm ci failed during rollback (exit code $LASTEXITCODE). API may not start correctly." -ForegroundColor Yellow
+            } else {
+                Write-Host "API dependencies restored successfully." -ForegroundColor Green
+            }
+        }
+        finally {
+            Pop-Location
+        }
+    } else {
+        Write-Host "WARNING: package.json not found at $packageJson - skipping npm ci." -ForegroundColor Yellow
+    }
+}
+
 # Database restore
 if (-not $DbBackupDir) {
     $DbBackupDir = "$backupDir\db_backups"
